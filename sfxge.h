@@ -953,6 +953,8 @@ extern int			sfxge_mcdi_init(sfxge_t *sp);
 extern void			sfxge_mcdi_fini(sfxge_t *sp);
 extern int			sfxge_mcdi_ioctl(sfxge_t *sp,
     sfxge_mcdi_ioc_t *smip);
+extern int			sfxge_mcdi2_ioctl(sfxge_t *sp,
+    sfxge_mcdi2_ioc_t *smip);
 
 extern int			sfxge_phy_init(sfxge_t *);
 extern void			sfxge_phy_link_mode_get(sfxge_t *,

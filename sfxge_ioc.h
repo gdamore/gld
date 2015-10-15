@@ -196,8 +196,9 @@ typedef	struct sfxge_phy_bist_ioc_s {
 #define	SFXGE_PHY_BIST_CABLE_BUSY		5
 #define	SFXGE_PHY_BIST_CABLE_UNKNOWN		6
 
-/* MCDI */
+/* MCDIv1 */
 
+/* Legacy IOC for MCDIv1 protocol - do not use in new code */
 #define	SFXGE_MCDI_IOC	(SFXGE_IOC | 0x0f)
 
 typedef	struct sfxge_mcdi_ioc_s {
@@ -227,6 +228,18 @@ typedef	struct sfxge_vpd_ioc_s {
 
 #define	SFXGE_VPD_OP_GET_KEYWORD	0x00000001
 #define	SFXGE_VPD_OP_SET_KEYWORD	0x00000002
+
+/* MCDIv2 */
+
+#define	SFXGE_MCDI2_IOC	(SFXGE_IOC | 0x12)
+
+typedef	struct sfxge_mcdi2_ioc_s {
+	uint8_t		smi_payload[1024];
+	uint32_t	smi_cmd;
+	uint32_t	smi_len; /* In and out */
+	uint32_t	smi_rc;
+} sfxge_mcdi2_ioc_t;
+
 
 #pragma pack()
 
