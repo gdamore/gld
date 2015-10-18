@@ -366,3 +366,66 @@ fail1:
 	DTRACE_PROBE1(fail1, int, rc);
 	return (rc);
 }
+
+int
+sfxge_mcdi2_ioctl(sfxge_t *sp, sfxge_mcdi2_ioc_t *smip)
+{
+	const efx_nic_cfg_t *encp = efx_nic_cfg_get(sp->s_enp);
+	sfxge_mcdi_t *smp = &(sp->s_mcdi);
+	efx_mcdi_req_t emr;
+	uint8_t *out;
+	int rc;
+
+	if (smp->sm_state == SFXGE_MCDI_UNINITIALIZED) {
+		rc = ENODEV;
+		goto fail1;
+	}
+
+	if (!(encp->enc_features & EFX_FEATURE_MCDI)) {
+		rc = ENOTSUP;
+		goto fail2;
+	}
+
+	if ((out = kmem_zalloc(sizeof (smip->smi_payload), KM_SLEEP)) == NULL) {
+		rc = ENOMEM;
+		goto fail3;
+	}
+
+	emr.emr_cmd = smip->smi_cmd;
+	emr.emr_in_buf = smip->smi_payload;
+	emr.emr_in_length = smip->smi_len;
+
+	emr.emr_out_buf = out;
+	emr.emr_out_length = sizeof (smip->smi_payload);
+
+	sfxge_mcdi_execute(sp, &emr);
+
+	smip->smi_rc = emr.emr_rc;
+	smip->smi_cmd = emr.emr_cmd;
+	smip->smi_len = emr.emr_out_length_used;
+	memcpy(smip->smi_payload, out, smip->smi_len);
+
+	/*
+	 * Helpfully trigger a device reset in response to an MCDI_CMD_REBOOT
+	 * Both ports will see ->emt_exception callbacks on the next MCDI poll
+	 */
+	if (smip->smi_cmd == MC_CMD_REBOOT) {
+
+		DTRACE_PROBE(mcdi_ioctl_mc_reboot);
+		/* sfxge_t->s_state_lock held */
+		(void) sfxge_restart_dispatch(sp, DDI_SLEEP, SFXGE_HW_OK,
+		    "MC_REBOOT triggering restart", 0);
+	}
+
+	kmem_free(out, sizeof (smip->smi_payload));
+
+	return (0);
+
+fail3:
+	DTRACE_PROBE(fail3);
+fail2:
+	DTRACE_PROBE(fail2);
+fail1:
+	DTRACE_PROBE1(fail1, int, rc);
+	return (rc);
+}

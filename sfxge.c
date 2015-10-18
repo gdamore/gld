@@ -674,6 +674,9 @@ sfxge_ioctl(sfxge_t *sp, queue_t *wq, mblk_t *mp)
 	case SFXGE_MCDI_IOC:
 		ioclen = sizeof (sfxge_mcdi_ioc_t);
 		break;
+	case SFXGE_MCDI2_IOC:
+		ioclen = sizeof (sfxge_mcdi2_ioc_t);
+		break;
 	case SFXGE_VPD_IOC:
 		ioclen = sizeof (sfxge_vpd_ioc_t);
 		break;
@@ -786,6 +789,16 @@ sfxge_ioctl(sfxge_t *sp, queue_t *wq, mblk_t *mp)
 		sfxge_mcdi_ioc_t *smip = (sfxge_mcdi_ioc_t *)mp->b_cont->b_rptr;
 
 		if ((rc = sfxge_mcdi_ioctl(sp, smip)) != 0)
+			goto fail4;
+		taskq_wait = 1;
+
+		break;
+	}
+	case SFXGE_MCDI2_IOC: {
+		sfxge_mcdi2_ioc_t *smip =
+		    (sfxge_mcdi2_ioc_t *)mp->b_cont->b_rptr;
+
+		if ((rc = sfxge_mcdi2_ioctl(sp, smip)) != 0)
 			goto fail4;
 		taskq_wait = 1;
 
