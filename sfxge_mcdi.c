@@ -209,6 +209,59 @@ sfxge_mcdi_exception(void *arg, efx_mcdi_exception_t eme)
 	(void) sfxge_restart_dispatch(sp, DDI_SLEEP, SFXGE_HW_ERR, reason, 0);
 }
 
+#define	SFXGE_MCDI_LOG_BUF_SIZE	128
+
+static size_t
+sfxge_mcdi_do_log(char *buffer, void *data, size_t data_size,
+		size_t pfxsize, size_t position)
+{
+	uint32_t *words = data;
+	size_t i;
+
+	for (i = 0; i < data_size; i += sizeof (*words)) {
+		if (position + 2 * sizeof (*words) + 1 >=
+		    SFXGE_MCDI_LOG_BUF_SIZE) {
+			buffer[position] = '\0';
+			cmn_err(CE_NOTE, "%s \\", buffer);
+			position = pfxsize;
+		}
+		snprintf(buffer + position, SFXGE_MCDI_LOG_BUF_SIZE - position,
+			" %08x", *words);
+		words++;
+		position += 2 * sizeof (uint32_t) + 1;
+	}
+	return (position);
+}
+
+
+static void
+sfxge_mcdi_logger(void *arg, efx_log_msg_t type,
+		void *header, size_t header_size,
+		void *data, size_t data_size)
+{
+	sfxge_t *sp = (sfxge_t *)arg;
+	char buffer[SFXGE_MCDI_LOG_BUF_SIZE];
+	size_t pfxsize;
+	size_t start;
+
+	pfxsize = snprintf(buffer, sizeof (buffer),
+			"sfc %04x:%02x:%02x.%02x %s%d MCDI RPC %s:",
+			0,
+			(((sp->s_bus_addr) & 0xff0000) >> 16),
+			(((sp->s_bus_addr) >> 11) & 0x1f),
+			(((sp->s_bus_addr) & 0x700) >> 8),
+			ddi_driver_name(sp->s_dip),
+			ddi_get_instance(sp->s_dip),
+			type == EFX_LOG_MCDI_REQUEST ? "REQ" :
+			type == EFX_LOG_MCDI_RESPONSE ? "RESP" : "???");
+	start = sfxge_mcdi_do_log(buffer, header, header_size,
+				pfxsize, pfxsize);
+	start = sfxge_mcdi_do_log(buffer, data, data_size, pfxsize, start);
+	if (start != pfxsize) {
+		buffer[start] = '\0';
+		cmn_err(CE_NOTE, "%s", buffer);
+	}
+}
 
 int
 sfxge_mcdi_init(sfxge_t *sp)
@@ -248,6 +301,7 @@ sfxge_mcdi_init(sfxge_t *sp)
 	emtp->emt_execute   = sfxge_mcdi_execute;
 	emtp->emt_ev_cpl    = sfxge_mcdi_ev_cpl;
 	emtp->emt_exception = sfxge_mcdi_exception;
+	emtp->emt_logger    = sfxge_mcdi_logger;
 
 	cv_init(&(smp->sm_kv), NULL, CV_DRIVER, NULL);
 

@@ -97,6 +97,18 @@ sfxge_pci_init(sfxge_t *sp)
 	uint16_t max_payload_size;
 	uint16_t max_read_request;
 	int rc;
+	int *pci_regs;
+	uint_t pci_nregs = 0;
+
+	if (ddi_prop_lookup_int_array(DDI_DEV_T_ANY, sp->s_dip,
+					DDI_PROP_DONTPASS, "reg",
+					(int **)&pci_regs, &pci_nregs)
+			!= DDI_PROP_SUCCESS) {
+		rc = ENODEV;
+		goto fail1;
+	}
+	sp->s_bus_addr = pci_regs[0];
+	ddi_prop_free(pci_regs);
 
 	if (pci_config_setup(sp->s_dip, &(sp->s_pci_handle)) != DDI_SUCCESS) {
 		rc = ENODEV;

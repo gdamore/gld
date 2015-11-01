@@ -109,7 +109,7 @@ extern "C" {
 #endif
 
 #define	EFSYS_OPT_MCDI 1
-#define	EFSYS_OPT_MCDI_LOGGING 0
+#define	EFSYS_OPT_MCDI_LOGGING 1
 
 #define	EFSYS_OPT_MAC_FALCON_GMAC 1
 #define	EFSYS_OPT_MAC_FALCON_XMAC 1

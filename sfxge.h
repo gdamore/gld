@@ -849,6 +849,7 @@ struct sfxge_s {
 	uint16_t			s_rxq_size;
 	uint16_t			s_evq0_size;
 	uint16_t			s_evqX_size;
+	unsigned int			s_bus_addr;
 };
 
 typedef struct sfxge_dma_buffer_attr_s {
