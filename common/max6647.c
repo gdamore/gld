@@ -38,13 +38,13 @@
 
 #if EFSYS_OPT_MON_MAX6647
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 max6647_reset(
 	__in		efx_nic_t *enp)
 {
 	uint8_t devid = enp->en_u.falcon.enu_mon_devid;
 	efx_byte_t byte;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_i2c_check(enp, devid)) != 0)
 		goto fail1;
@@ -92,18 +92,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 max6647_reconfigure(
 	__in		efx_nic_t *enp)
 {
 	uint8_t devid = enp->en_u.falcon.enu_mon_devid;
 	efx_byte_t byte;
-	efx_rc_t rc;
+	int rc;
 
 	/* Clear any latched status */
 	if ((rc = falcon_i2c_read(enp, devid, RSL_REG, (caddr_t)&byte,
@@ -143,7 +143,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -165,13 +165,13 @@ fail1:
 		_NOTE(CONSTANTCONDITION)				\
 	} while (B_FALSE)
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 max6647_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
 	__inout_ecount(EFX_MON_NSTATS)	efx_mon_stat_value_t *values)
 {
-	efx_rc_t rc;
+	int rc;
 
 	_NOTE(ARGUNUSED(esmp))
 
@@ -188,7 +188,7 @@ max6647_stats_update(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

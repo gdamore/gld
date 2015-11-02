@@ -36,13 +36,13 @@
 
 #if EFSYS_OPT_FALCON
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falcon_mdio_wait(
 	__in		efx_nic_t *enp)
 {
 	efx_oword_t oword;
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	count = 0;
 	do {
@@ -79,12 +79,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_mdio_write(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
@@ -98,7 +98,7 @@ falcon_mdio_write(
 	uint32_t devad;
 	uint32_t addr;
 	uint16_t val;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_LOCK(enp->en_eslp, state);
 
@@ -142,13 +142,13 @@ falcon_mdio_write(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	EFSYS_UNLOCK(enp->en_eslp, state);
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_mdio_read(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
@@ -162,7 +162,7 @@ falcon_mdio_read(
 	uint32_t devad;
 	uint32_t addr;
 	uint16_t val;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_LOCK(enp->en_eslp, state);
 
@@ -210,7 +210,7 @@ falcon_mdio_read(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	EFSYS_UNLOCK(enp->en_eslp, state);
 	return (rc);

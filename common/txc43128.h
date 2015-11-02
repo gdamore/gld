@@ -59,31 +59,31 @@ extern "C" {
 
 #define	TXC43128_BIST_MASK	0
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 txc43128_reset(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 txc43128_reconfigure(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 txc43128_verify(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 txc43128_uplink_check(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *upp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 txc43128_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t *modep,
 	__out		unsigned int *fcntlp,
 	__out		uint32_t *lp_cap_maskp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 txc43128_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip);
@@ -114,7 +114,7 @@ txc43128_oui_get(
 
 /* END MKCONFIG GENERATED Txc43128PhyHeaderStatsMask */
 
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 txc43128_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
@@ -133,14 +133,14 @@ txc43128_prop_name(
 
 #endif
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 txc43128_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
 	__in		uint32_t flags,
 	__out		uint32_t *valp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 txc43128_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,

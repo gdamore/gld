@@ -59,31 +59,31 @@ extern "C" {
 
 #define	QT2022C2_BIST_MASK	0
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2022c2_reset(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2022c2_reconfigure(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2022c2_verify(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2022c2_uplink_check(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *upp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2022c2_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t *modep,
 	__out		unsigned int *fcntlp,
 	__out		uint32_t *lp_cap_maskp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2022c2_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip);
@@ -112,11 +112,11 @@ qt2022c2_oui_get(
 
 /* END MKCONFIG GENERATED Qt2022c2PhyHeaderStatsMask */
 
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 qt2022c2_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat);
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat);
 
 #endif	/* EFSYS_OPT_PHY_STATS */
 
@@ -131,14 +131,14 @@ qt2022c2_prop_name(
 
 #endif
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2022c2_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
 	__in		uint32_t flags,
 	__out		uint32_t *valp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2022c2_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,

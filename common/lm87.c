@@ -38,13 +38,13 @@
 
 #if EFSYS_OPT_MON_LM87
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 lm87_reset(
 	__in		efx_nic_t *enp)
 {
 	uint8_t devid = enp->en_u.falcon.enu_mon_devid;
 	efx_byte_t byte;
-	efx_rc_t rc;
+	int rc;
 
 	/* Check we can communicate with the chip */
 	if ((rc = falcon_i2c_check(enp, devid)) != 0)
@@ -86,18 +86,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 lm87_reconfigure(
 	__in		efx_nic_t *enp)
 {
 	uint8_t devid = enp->en_u.falcon.enu_mon_devid;
 	efx_byte_t byte;
-	efx_rc_t rc;
+	int rc;
 
 	/* Configure the channel mode to select AIN1/2 rather than FAN1/2 */
 	EFX_POPULATE_BYTE_2(byte, FAN1_AIN1, 1, FAN2_AIN2, 1);
@@ -129,7 +129,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -154,14 +154,14 @@ fail1:
 		_NOTE(CONSTANTCONDITION)				\
 	} while (B_FALSE)
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 lm87_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_MON_NSTATS)	efx_mon_stat_value_t *values)
+	__out_ecount(EFX_MON_NSTATS)	efx_mon_stat_value_t *values)
 {
 	uint32_t mask = 0;
-	efx_rc_t rc;
+	int rc;
 
 	_NOTE(ARGUNUSED(esmp))
 
@@ -228,7 +228,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

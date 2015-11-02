@@ -39,7 +39,7 @@
 
 #if EFSYS_OPT_PHY_QT2022C2
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2022c2_led_cfg(
 	__in		efx_nic_t *enp)
 {
@@ -47,7 +47,7 @@ qt2022c2_led_cfg(
 	efx_word_t led1;
 	efx_word_t led2;
 	efx_word_t led3;
-	efx_rc_t rc;
+	int rc;
 
 #if EFSYS_OPT_PHY_LED_CONTROL
 
@@ -106,18 +106,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #if EFSYS_OPT_LOOPBACK
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2022c2_loopback_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	switch (epp->ep_loopback_type) {
 	case EFX_LOOPBACK_PHY_XS: {
@@ -158,13 +158,13 @@ qt2022c2_loopback_cfg(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 #endif	/* EFSYS_OPT_LOOPBACK */
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2022c2_reset(
 	__in		efx_nic_t *enp)
 {
@@ -174,12 +174,12 @@ qt2022c2_reset(
 	return (0);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2022c2_reconfigure(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_pkg_wait(enp, epp->ep_port, QT2022C2_MMD_MASK)) != 0)
 		goto fail1;
@@ -204,17 +204,17 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2022c2_verify(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_pkg_verify(enp, epp->ep_port, QT2022C2_MMD_MASK)) != 0)
 		goto fail1;
@@ -222,19 +222,19 @@ qt2022c2_verify(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2022c2_uplink_check(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *upp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if (epp->ep_mac_type != EFX_MAC_FALCON_XMAC) {
 		rc = ENOTSUP;
@@ -256,12 +256,12 @@ qt2022c2_uplink_check(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2022c2_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t *modep,
@@ -270,7 +270,7 @@ qt2022c2_downlink_check(
 {
 	efx_port_t *epp = &(enp->en_port);
 	boolean_t up;
-	efx_rc_t rc;
+	int rc;
 
 #if EFSYS_OPT_LOOPBACK
 	switch (epp->ep_loopback_type) {
@@ -309,18 +309,18 @@ done:
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2022c2_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_mmd_oui_get(enp, epp->ep_port, PMA_PMD_MMD, ouip)) != 0)
 		goto fail1;
@@ -328,7 +328,7 @@ qt2022c2_oui_get(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -342,15 +342,15 @@ fail1:
 	_NOTE(CONSTANTCONDITION)					\
 	} while (B_FALSE)
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 qt2022c2_pma_pmd_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_STATUS1_REG, &word)) != 0)
@@ -373,20 +373,20 @@ qt2022c2_pma_pmd_stats_update(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 qt2022c2_pcs_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PCS_MMD,
 	    PCS_STATUS1_REG, &word)) != 0)
@@ -420,20 +420,20 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 qt2022c2_phy_xs_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PHY_XS_MMD,
 	    PHY_XS_STATUS1_REG, &word)) != 0)
@@ -473,22 +473,22 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 qt2022c2_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_nic_cfg_t *encp = &(enp->en_nic_cfg);
 	uint32_t oui;
 	uint64_t mask = 0;
-	efx_rc_t rc;
+	int rc;
 
 	_NOTE(ARGUNUSED(esmp))
 
@@ -518,7 +518,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -540,7 +540,7 @@ qt2022c2_prop_name(
 }
 #endif	/* EFSYS_OPT_NAMES */
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2022c2_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
@@ -554,7 +554,7 @@ qt2022c2_prop_get(
 	return (ENOTSUP);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2022c2_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,

@@ -50,8 +50,6 @@ static efx_mcdi_ops_t	__efx_mcdi_siena_ops = {
 	siena_mcdi_fw_update_supported,	/* emco_fw_update_supported */
 	siena_mcdi_macaddr_change_supported,
 				/* emco_macaddr_change_supported */
-	siena_mcdi_link_control_supported,
-				/* emco_link_control_supported */
 };
 
 #endif	/* EFSYS_OPT_SIENA */
@@ -68,21 +66,19 @@ static efx_mcdi_ops_t	__efx_mcdi_hunt_ops = {
 	hunt_mcdi_fw_update_supported,	/* emco_fw_update_supported */
 	hunt_mcdi_macaddr_change_supported,
 				/* emco_macaddr_change_supported */
-	hunt_mcdi_link_control_supported,
-				/* emco_link_control_supported */
 };
 
 #endif	/* EFSYS_OPT_HUNTINGTON */
 
 
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_init(
 	__in		efx_nic_t *enp,
 	__in		const efx_mcdi_transport_t *emtp)
 {
 	efx_mcdi_ops_t *emcop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_mod_flags, ==, 0);
@@ -137,7 +133,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	enp->en_mcdi.em_emcop = NULL;
 	enp->en_mcdi.em_emtp = NULL;
@@ -286,7 +282,7 @@ efx_mcdi_request_abort(
 	return (aborted);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_request_errcode(
 	__in		unsigned int err)
 {
@@ -379,7 +375,7 @@ efx_mcdi_raise_exception(
 	emtp->emt_exception(emtp->emt_context, exception);
 }
 
-static			efx_rc_t
+static			int
 efx_mcdi_poll_reboot(
 	__in		efx_nic_t *enp)
 {
@@ -465,8 +461,9 @@ efx_mcdi_ev_cpl(
 	} else {
 		emrp->emr_out_length_used = outlen;
 		emrp->emr_rc = 0;
+
+		emcop->emco_request_copyout(enp, emrp);
 	}
-	emcop->emco_request_copyout(enp, emrp);
 
 	emtp->emt_ev_cpl(emtp->emt_context);
 }
@@ -524,7 +521,7 @@ efx_mcdi_ev_death(
 		emtp->emt_ev_cpl(emtp->emt_context);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 efx_mcdi_version(
 	__in			efx_nic_t *enp,
 	__out_ecount_opt(4)	uint16_t versionp[4],
@@ -540,7 +537,7 @@ efx_mcdi_version(
 	uint16_t version[4];
 	uint32_t build;
 	efx_mcdi_boot_t status;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_features, &, EFX_FEATURE_MCDI);
 
@@ -635,19 +632,19 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 efx_mcdi_do_reboot(
 	__in		efx_nic_t *enp,
 	__in		boolean_t after_assertion)
 {
 	uint8_t payload[MAX(MC_CMD_REBOOT_IN_LEN, MC_CMD_REBOOT_OUT_LEN)];
 	efx_mcdi_req_t req;
-	efx_rc_t rc;
+	int rc;
 
 	/*
 	 * We could require the caller to have caused en_mod_flags=0 to
@@ -685,26 +682,26 @@ out:
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_reboot(
 	__in		efx_nic_t *enp)
 {
 	return (efx_mcdi_do_reboot(enp, B_FALSE));
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_exit_assertion_handler(
 	__in		efx_nic_t *enp)
 {
 	return (efx_mcdi_do_reboot(enp, B_TRUE));
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_read_assertion(
 	__in		efx_nic_t *enp)
 {
@@ -716,7 +713,7 @@ efx_mcdi_read_assertion(
 	unsigned int index;
 	unsigned int ofst;
 	int retry;
-	efx_rc_t rc;
+	int rc;
 
 	/*
 	 * Before we attempt to chat to the MC, we should verify that the MC
@@ -795,7 +792,7 @@ out:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -805,7 +802,7 @@ fail1:
  * Internal routines for for specific MCDI requests.
  */
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_drv_attach(
 	__in		efx_nic_t *enp,
 	__in		boolean_t attach)
@@ -815,7 +812,7 @@ efx_mcdi_drv_attach(
 	uint8_t payload[MAX(MC_CMD_DRV_ATTACH_IN_LEN,
 			    MC_CMD_DRV_ATTACH_EXT_OUT_LEN)];
 	uint32_t flags;
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_DRV_ATTACH;
@@ -878,12 +875,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 efx_mcdi_get_board_cfg(
 	__in			efx_nic_t *enp,
 	__out_opt		uint32_t *board_typep,
@@ -894,7 +891,7 @@ efx_mcdi_get_board_cfg(
 	efx_mcdi_req_t req;
 	uint8_t payload[MAX(MC_CMD_GET_BOARD_CFG_IN_LEN,
 			    MC_CMD_GET_BOARD_CFG_OUT_LENMIN)];
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_GET_BOARD_CFG;
@@ -959,12 +956,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_get_resource_limits(
 	__in		efx_nic_t *enp,
 	__out_opt	uint32_t *nevqp,
@@ -974,7 +971,7 @@ efx_mcdi_get_resource_limits(
 	efx_mcdi_req_t req;
 	uint8_t payload[MAX(MC_CMD_GET_RESOURCE_LIMITS_IN_LEN,
 			    MC_CMD_GET_RESOURCE_LIMITS_OUT_LEN)];
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_GET_RESOURCE_LIMITS;
@@ -1007,12 +1004,12 @@ efx_mcdi_get_resource_limits(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_get_phy_cfg(
 	__in		efx_nic_t *enp)
 {
@@ -1021,7 +1018,7 @@ efx_mcdi_get_phy_cfg(
 	efx_mcdi_req_t req;
 	uint8_t payload[MAX(MC_CMD_GET_PHY_CFG_IN_LEN,
 			    MC_CMD_GET_PHY_CFG_OUT_LEN)];
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_GET_PHY_CFG;
@@ -1113,19 +1110,19 @@ efx_mcdi_get_phy_cfg(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 efx_mcdi_firmware_update_supported(
 	__in			efx_nic_t *enp,
 	__out			boolean_t *supportedp)
 {
 	efx_mcdi_ops_t *emcop = enp->en_mcdi.em_emcop;
-	efx_rc_t rc;
+	int rc;
 
 	if (emcop != NULL && emcop->emco_fw_update_supported != NULL) {
 		if ((rc = emcop->emco_fw_update_supported(enp, supportedp))
@@ -1139,18 +1136,18 @@ efx_mcdi_firmware_update_supported(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 efx_mcdi_macaddr_change_supported(
 	__in			efx_nic_t *enp,
 	__out			boolean_t *supportedp)
 {
 	efx_mcdi_ops_t *emcop = enp->en_mcdi.em_emcop;
-	efx_rc_t rc;
+	int rc;
 
 	if (emcop != NULL && emcop->emco_macaddr_change_supported != NULL) {
 		if ((rc = emcop->emco_macaddr_change_supported(enp, supportedp))
@@ -1164,32 +1161,7 @@ efx_mcdi_macaddr_change_supported(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
-
-	return (rc);
-}
-
-	__checkReturn		efx_rc_t
-efx_mcdi_link_control_supported(
-	__in			efx_nic_t *enp,
-	__out			boolean_t *supportedp)
-{
-	efx_mcdi_ops_t *emcop = enp->en_mcdi.em_emcop;
-	efx_rc_t rc;
-
-	if (emcop != NULL && emcop->emco_link_control_supported != NULL) {
-		if ((rc = emcop->emco_link_control_supported(enp, supportedp))
-		    != 0)
-			goto fail1;
-	} else {
-		/* Earlier devices always supported link control */
-		*supportedp = B_TRUE;
-	}
-
-	return (0);
-
-fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1202,12 +1174,12 @@ fail1:
  * where memory BIST tests can be run and not much else can interfere or happen.
  * A reboot is required to exit this mode.
  */
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 efx_mcdi_bist_enable_offline(
 	__in			efx_nic_t *enp)
 {
 	efx_mcdi_req_t req;
-	efx_rc_t rc;
+	int rc;
 
 	EFX_STATIC_ASSERT(MC_CMD_ENABLE_OFFLINE_BIST_IN_LEN == 0);
 	EFX_STATIC_ASSERT(MC_CMD_ENABLE_OFFLINE_BIST_OUT_LEN == 0);
@@ -1228,13 +1200,13 @@ efx_mcdi_bist_enable_offline(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 #endif /* EFSYS_OPT_HUNTINGTON */
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 efx_mcdi_bist_start(
 	__in			efx_nic_t *enp,
 	__in			efx_bist_type_t type)
@@ -1242,7 +1214,7 @@ efx_mcdi_bist_start(
 	efx_mcdi_req_t req;
 	uint8_t payload[MAX(MC_CMD_START_BIST_IN_LEN,
 			    MC_CMD_START_BIST_OUT_LEN)];
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_START_BIST;
@@ -1289,7 +1261,7 @@ efx_mcdi_bist_start(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1298,14 +1270,14 @@ fail1:
 
 
 /* Enable logging of some events (e.g. link state changes) */
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_log_ctrl(
 	__in		efx_nic_t *enp)
 {
 	efx_mcdi_req_t req;
 	uint8_t payload[MAX(MC_CMD_LOG_CTRL_IN_LEN,
 			    MC_CMD_LOG_CTRL_OUT_LEN)];
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_LOG_CTRL;
@@ -1328,7 +1300,7 @@ efx_mcdi_log_ctrl(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1345,7 +1317,7 @@ typedef enum efx_stats_action_e
 	EFX_STATS_DISABLE,
 } efx_stats_action_t;
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 efx_mcdi_mac_stats(
 	__in		efx_nic_t *enp,
 	__in_opt	efsys_mem_t *esmp,
@@ -1359,7 +1331,7 @@ efx_mcdi_mac_stats(
 	int enable = (action == EFX_STATS_ENABLE_NOEVENTS);
 	int events = (action == EFX_STATS_ENABLE_EVENTS);
 	int disable = (action == EFX_STATS_DISABLE);
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_MAC_STATS;
@@ -1413,16 +1385,16 @@ efx_mcdi_mac_stats(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_mac_stats_clear(
 	__in		efx_nic_t *enp)
 {
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = efx_mcdi_mac_stats(enp, NULL, EFX_STATS_CLEAR)) != 0)
 		goto fail1;
@@ -1430,17 +1402,17 @@ efx_mcdi_mac_stats_clear(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_mac_stats_upload(
 	__in		efx_nic_t *enp,
 	__in		efsys_mem_t *esmp)
 {
-	efx_rc_t rc;
+	int rc;
 
 	/*
 	 * The MC DMAs aggregate statistics for our convenience, so we can
@@ -1453,19 +1425,19 @@ efx_mcdi_mac_stats_upload(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_mcdi_mac_stats_periodic(
 	__in		efx_nic_t *enp,
 	__in		efsys_mem_t *esmp,
 	__in		uint16_t period,
 	__in		boolean_t events)
 {
-	efx_rc_t rc;
+	int rc;
 
 	/*
 	 * The MC DMAs aggregate statistics for our convenience, so we can
@@ -1486,7 +1458,7 @@ efx_mcdi_mac_stats_periodic(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1501,7 +1473,7 @@ fail1:
  * function. So if you have 3 vfs on pf 0 the 3 vfs will return (pf=0,vf=0),
  * (pf=0,vf=1), (pf=0,vf=2) aand the pf will return (pf=0, vf=0xffff).
  */
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 efx_mcdi_get_function_info(
 	__in			efx_nic_t *enp,
 	__out			uint32_t *pfp,
@@ -1510,7 +1482,7 @@ efx_mcdi_get_function_info(
 	efx_mcdi_req_t req;
 	uint8_t payload[MAX(MC_CMD_GET_FUNCTION_INFO_IN_LEN,
 			    MC_CMD_GET_FUNCTION_INFO_OUT_LEN)];
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_GET_FUNCTION_INFO;
@@ -1540,12 +1512,12 @@ efx_mcdi_get_function_info(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 efx_mcdi_privilege_mask(
 	__in			efx_nic_t *enp,
 	__in			uint32_t pf,
@@ -1555,7 +1527,7 @@ efx_mcdi_privilege_mask(
 	efx_mcdi_req_t req;
 	uint8_t payload[MAX(MC_CMD_PRIVILEGE_MASK_IN_LEN,
 			    MC_CMD_PRIVILEGE_MASK_OUT_LEN)];
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_PRIVILEGE_MASK;
@@ -1587,14 +1559,14 @@ efx_mcdi_privilege_mask(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #endif /* EFSYS_OPT_HUNTINGTON */
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 efx_mcdi_set_workaround(
 	__in			efx_nic_t *enp,
 	__in			uint32_t type,
@@ -1604,7 +1576,7 @@ efx_mcdi_set_workaround(
 	efx_mcdi_req_t req;
 	uint8_t payload[MAX(MC_CMD_WORKAROUND_IN_LEN,
 			    MC_CMD_WORKAROUND_EXT_OUT_LEN)];
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_WORKAROUND;
@@ -1633,13 +1605,13 @@ efx_mcdi_set_workaround(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 efx_mcdi_get_workarounds(
 	__in			efx_nic_t *enp,
 	__out_opt		uint32_t *implementedp,
@@ -1647,7 +1619,7 @@ efx_mcdi_get_workarounds(
 {
 	efx_mcdi_req_t req;
 	uint8_t payload[MC_CMD_GET_WORKAROUNDS_OUT_LEN];
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_GET_WORKAROUNDS;
@@ -1675,7 +1647,7 @@ efx_mcdi_get_workarounds(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

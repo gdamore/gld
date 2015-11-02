@@ -42,11 +42,11 @@ extern "C" {
 #define	MAX6646_DEVID 0x4d
 #define	MAX6647_DEVID 0x4e
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 max6647_reset(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 max6647_reconfigure(
 	__in		efx_nic_t *enp);
 
@@ -56,11 +56,11 @@ max6647_reconfigure(
 	(1ULL << EFX_MON_STAT_INT_TEMP) | \
 	(1ULL << EFX_MON_STAT_EXT_TEMP)
 
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 max6647_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_MON_NSTATS)	efx_mon_stat_value_t *values);
+	__out_ecount(EFX_MON_NSTATS)	efx_mon_stat_value_t *values);
 
 #endif	/* EFSYS_OPT_MON_STATS */
 

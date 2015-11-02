@@ -38,21 +38,20 @@
 
 #if EFSYS_OPT_VPD || EFSYS_OPT_NVRAM
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_partn_size(
 	__in			efx_nic_t *enp,
 	__in			unsigned int partn,
 	__out			size_t *sizep)
 {
-	efx_rc_t rc;
+	int rc;
 
 	if ((1 << partn) & ~enp->en_u.siena.enu_partn_mask) {
 		rc = ENOTSUP;
 		goto fail1;
 	}
 
-	if ((rc = efx_mcdi_nvram_info(enp, partn, sizep,
-	    NULL, NULL, NULL)) != 0) {
+	if ((rc = efx_mcdi_nvram_info(enp, partn, sizep, NULL, NULL)) != 0) {
 		goto fail2;
 	}
 
@@ -61,17 +60,17 @@ siena_nvram_partn_size(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_partn_lock(
 	__in			efx_nic_t *enp,
 	__in			unsigned int partn)
 {
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = efx_mcdi_nvram_update_start(enp, partn)) != 0) {
 		goto fail1;
@@ -80,12 +79,12 @@ siena_nvram_partn_lock(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_partn_read(
 	__in			efx_nic_t *enp,
 	__in			unsigned int partn,
@@ -94,7 +93,7 @@ siena_nvram_partn_read(
 	__in			size_t size)
 {
 	size_t chunk;
-	efx_rc_t rc;
+	int rc;
 
 	while (size > 0) {
 		chunk = MIN(size, SIENA_NVRAM_CHUNK);
@@ -112,19 +111,19 @@ siena_nvram_partn_read(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_partn_erase(
 	__in			efx_nic_t *enp,
 	__in			unsigned int partn,
 	__in			unsigned int offset,
 	__in			size_t size)
 {
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = efx_mcdi_nvram_erase(enp, partn, offset, size)) != 0) {
 		goto fail1;
@@ -133,12 +132,12 @@ siena_nvram_partn_erase(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_partn_write(
 	__in			efx_nic_t *enp,
 	__in			unsigned int partn,
@@ -147,7 +146,7 @@ siena_nvram_partn_write(
 	__in			size_t size)
 {
 	size_t chunk;
-	efx_rc_t rc;
+	int rc;
 
 	while (size > 0) {
 		chunk = MIN(size, SIENA_NVRAM_CHUNK);
@@ -165,7 +164,7 @@ siena_nvram_partn_write(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -176,7 +175,7 @@ siena_nvram_partn_unlock(
 	__in			unsigned int partn)
 {
 	boolean_t reboot;
-	efx_rc_t rc;
+	int rc;
 
 	/*
 	 * Reboot into the new image only for PHYs. The driver has to
@@ -193,7 +192,7 @@ siena_nvram_partn_unlock(
 	return;
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 }
 
 #endif	/* EFSYS_OPT_VPD || EFSYS_OPT_NVRAM */
@@ -252,14 +251,14 @@ siena_parttbl_entry(
 
 #if EFSYS_OPT_DIAG
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_test(
 	__in			efx_nic_t *enp)
 {
 	efx_mcdi_iface_t *emip = &(enp->en_mcdi.em_emip);
 	siena_parttbl_entry_t *entry;
 	unsigned int i;
-	efx_rc_t rc;
+	int rc;
 
 	/*
 	 * Iterate over the list of supported partition types
@@ -280,21 +279,21 @@ siena_nvram_test(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #endif	/* EFSYS_OPT_DIAG */
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_size(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
 	__out			size_t *sizep)
 {
 	siena_parttbl_entry_t *entry;
-	efx_rc_t rc;
+	int rc;
 
 	if ((entry = siena_parttbl_entry(enp, type)) == NULL) {
 		rc = ENOTSUP;
@@ -309,7 +308,7 @@ siena_nvram_size(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	*sizep = 0;
 
@@ -320,7 +319,7 @@ fail1:
 	(sizeof (siena_mc_dynamic_config_hdr_t) + ((_nitems) *		\
 	sizeof (((siena_mc_dynamic_config_hdr_t *)NULL)->fw_version[0])))
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_get_dynamic_cfg(
 	__in			efx_nic_t *enp,
 	__in			unsigned int partn,
@@ -337,7 +336,7 @@ siena_nvram_get_dynamic_cfg(
 	unsigned int nversions;
 	unsigned int pos;
 	unsigned int region;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(partn == MC_CMD_NVRAM_TYPE_DYNAMIC_CFG_PORT0 ||
 		    partn == MC_CMD_NVRAM_TYPE_DYNAMIC_CFG_PORT1);
@@ -444,12 +443,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_get_subtype(
 	__in			efx_nic_t *enp,
 	__in			unsigned int partn,
@@ -459,7 +458,7 @@ siena_nvram_get_subtype(
 	uint8_t payload[MAX(MC_CMD_GET_BOARD_CFG_IN_LEN,
 			    MC_CMD_GET_BOARD_CFG_OUT_LENMAX)];
 	efx_word_t *fw_list;
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_GET_BOARD_CFG;
@@ -498,12 +497,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_get_version(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -515,7 +514,7 @@ siena_nvram_get_version(
 	unsigned int dcfg_partn;
 	unsigned int partn;
 	unsigned int i;
-	efx_rc_t rc;
+	int rc;
 
 	if ((entry = siena_parttbl_entry(enp, type)) == NULL) {
 		rc = ENOTSUP;
@@ -591,19 +590,19 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_rw_start(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
 	__out			size_t *chunk_sizep)
 {
 	siena_parttbl_entry_t *entry;
-	efx_rc_t rc;
+	int rc;
 
 	if ((entry = siena_parttbl_entry(enp, type)) == NULL) {
 		rc = ENOTSUP;
@@ -621,12 +620,12 @@ siena_nvram_rw_start(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_read_chunk(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -635,7 +634,7 @@ siena_nvram_read_chunk(
 	__in			size_t size)
 {
 	siena_parttbl_entry_t *entry;
-	efx_rc_t rc;
+	int rc;
 
 	if ((entry = siena_parttbl_entry(enp, type)) == NULL) {
 		rc = ENOTSUP;
@@ -651,19 +650,19 @@ siena_nvram_read_chunk(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_erase(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type)
 {
 	siena_parttbl_entry_t *entry;
 	size_t size;
-	efx_rc_t rc;
+	int rc;
 
 	if ((entry = siena_parttbl_entry(enp, type)) == NULL) {
 		rc = ENOTSUP;
@@ -683,12 +682,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_write_chunk(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -697,7 +696,7 @@ siena_nvram_write_chunk(
 	__in			size_t size)
 {
 	siena_parttbl_entry_t *entry;
-	efx_rc_t rc;
+	int rc;
 
 	if ((entry = siena_parttbl_entry(enp, type)) == NULL) {
 		rc = ENOTSUP;
@@ -713,7 +712,7 @@ siena_nvram_write_chunk(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -729,7 +728,7 @@ siena_nvram_rw_finish(
 		siena_nvram_partn_unlock(enp, entry->partn);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_nvram_set_version(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -748,7 +747,7 @@ siena_nvram_set_version(
 	uint8_t cksum;
 	uint32_t subtype;
 	size_t length;
-	efx_rc_t rc;
+	int rc;
 
 	if ((entry = siena_parttbl_entry(enp, type)) == NULL) {
 		rc = ENOTSUP;
@@ -859,7 +858,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

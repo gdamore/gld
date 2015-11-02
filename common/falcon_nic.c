@@ -78,7 +78,7 @@
 #include "qt2025c.h"
 #endif
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nic_cfg_raw_read(
 	__in			efx_nic_t *enp,
 	__in			uint32_t offset,
@@ -98,7 +98,7 @@ falcon_nic_cfg_raw_read(
 		    (caddr_t)cfg, size));
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_nic_cfg_raw_read_verify(
 	__in			efx_nic_t *enp,
 	__in			uint32_t offset,
@@ -107,7 +107,7 @@ falcon_nic_cfg_raw_read_verify(
 {
 	uint32_t csum_offset;
 	uint16_t magic, version, cksum;
-	efx_rc_t rc;
+	int rc;
 	efx_word_t word;
 
 	if ((rc = falcon_nic_cfg_raw_read(enp, CFG_MAGIC_REG_SF_OFST,
@@ -152,19 +152,19 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_nic_probe(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_nic_cfg_t *encp = &(enp->en_nic_cfg);
 	efx_oword_t oword;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -196,7 +196,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -224,7 +224,7 @@ fail1:
 	(FALCON_NIC_CFG_BUILD_HIGHEST_REG -		\
 	    FALCON_NIC_CFG_BUILD_LOWEST_REG)
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_nic_cfg_build(
 	__in		efx_nic_t *enp,
 	__out		efx_nic_cfg_t *encp)
@@ -235,7 +235,7 @@ falcon_nic_cfg_build(
 	efx_oword_t *owordp;
 	uint8_t major;
 	uint8_t minor;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -593,14 +593,13 @@ falcon_nic_cfg_build(
 
 	encp->enc_hw_tx_insert_vlan_enabled = B_FALSE;
 	encp->enc_fw_assisted_tso_enabled = B_FALSE;
-	encp->enc_allow_set_mac_with_installed_filters = B_TRUE;
 
 	return (0);
 
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -703,7 +702,7 @@ falcon_nic_pcie_rpl_tl_set(
 
 	index = EFX_DWORD_FIELD(dword, PCRF_AZ_MAX_PAYL_SIZE);
 	if (index >= 4) {
-		EFSYS_PROBE1(fail1, efx_rc_t, EIO);
+		EFSYS_PROBE1(fail1, int, EIO);
 		return;
 	}
 
@@ -752,7 +751,7 @@ falcon_nic_pcie_ack_freq_set(
 	falcon_nic_pcie_core_write(enp, PCR_AC_ACK_FREQ_REG, &dword);
 }
 
-			efx_rc_t
+			int
 falcon_nic_pcie_tune(
 	__in		efx_nic_t *enp,
 	__in		unsigned int nlanes)
@@ -765,7 +764,7 @@ falcon_nic_pcie_tune(
 
 #endif	/* EFSYS_OPT_PCIE_TUNE */
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_nic_reset(
 	__in		efx_nic_t *enp)
 {
@@ -773,7 +772,7 @@ falcon_nic_reset(
 	falcon_i2c_t *fip = &(enp->en_u.falcon.enu_fip);
 	efx_oword_t oword;
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -843,7 +842,7 @@ done:
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -894,11 +893,11 @@ falcon_rx_reset_recovery_enable(
 	EFX_BAR_WRITEO(enp, FR_AZ_RX_SELF_RST_REG, &oword);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_nic_init(
 	__in		efx_nic_t *enp)
 {
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_sram_init(enp)) != 0)
 		goto fail1;
@@ -916,23 +915,21 @@ falcon_nic_init(
 	/* Enable RX_RECOVERY feature */
 	falcon_rx_reset_recovery_enable(enp);
 
-	enp->en_nic_cfg.enc_mcdi_max_payload_length = MCDI_CTL_SDU_LEN_MAX_V1;
-
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_nic_mac_reset(
 	__in		efx_nic_t *enp)
 {
 	efx_oword_t oword;
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -975,7 +972,7 @@ done:
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 	return (rc);
 }
 
@@ -1095,7 +1092,7 @@ static const uint32_t __falcon_b0_table_masks[] = {
 	0x3FFFFFFE, 0x0FFFFFFF, 0x0C000000, 0x00000000,
 };
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_nic_register_test(
 	__in		efx_nic_t *enp)
 {
@@ -1103,7 +1100,7 @@ falcon_nic_register_test(
 	const uint32_t *dwordp;
 	unsigned int nitems;
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	/* Fill out the register mask entries */
 	EFX_STATIC_ASSERT(EFX_ARRAY_SIZE(__falcon_b0_register_masks)
@@ -1160,7 +1157,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

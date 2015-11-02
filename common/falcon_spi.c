@@ -60,12 +60,12 @@
 #define	SPI_STATUS_NRDY_LBN 0
 #define	SPI_STATUS_NRDY_WIDTH 1
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falcon_spi_wait(
 	__in		efx_nic_t *enp)
 {
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	count = 0;
 	do {
@@ -89,7 +89,7 @@ done:
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -105,7 +105,7 @@ fail1:
 	_NOTE(CONSTANTCONDITION)					\
 	} while (B_FALSE)
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 falcon_spi_cmd(
 	__in				efx_nic_t *enp,
 	__in				uint32_t sf_sel,
@@ -122,7 +122,7 @@ falcon_spi_cmd(
 {
 	uint32_t enc;
 	efx_oword_t oword;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(dabcnt, <=,  sizeof (efx_oword_t));
 
@@ -180,12 +180,12 @@ falcon_spi_cmd(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falcon_spi_dev_wait(
 	__in		efx_nic_t *enp,
 	__in		falcon_spi_dev_t *fsdp,
@@ -193,7 +193,7 @@ falcon_spi_dev_wait(
 	__in		unsigned int n)
 {
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	count = 0;
 	do {
@@ -221,12 +221,12 @@ done:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_spi_dev_read(
 	__in			efx_nic_t *enp,
 	__in			falcon_spi_type_t type,
@@ -237,7 +237,7 @@ falcon_spi_dev_read(
 	falcon_spi_dev_t *fsdp = &(enp->en_u.falcon.enu_fsd[type]);
 	uint32_t end = addr + size;
 	int state;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(type, <, FALCON_SPI_NTYPES);
 
@@ -272,12 +272,12 @@ fail2:
 	EFSYS_UNLOCK(enp->en_eslp, state);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_spi_dev_write(
 	__in			efx_nic_t *enp,
 	__in			falcon_spi_type_t type,
@@ -288,7 +288,7 @@ falcon_spi_dev_write(
 	falcon_spi_dev_t *fsdp = &(enp->en_u.falcon.enu_fsd[type]);
 	uint32_t end = addr + size;
 	int state;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(type, <, FALCON_SPI_NTYPES);
 
@@ -356,12 +356,12 @@ fail2:
 
 	EFSYS_UNLOCK(enp->en_eslp, state);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_spi_dev_erase(
 	__in		efx_nic_t *enp,
 	__in		falcon_spi_type_t type,
@@ -371,7 +371,7 @@ falcon_spi_dev_erase(
 	falcon_spi_dev_t *fsdp = &(enp->en_u.falcon.enu_fsd[type]);
 	uint32_t end = addr + size;
 	int state;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(type, <, FALCON_SPI_NTYPES);
 
@@ -430,7 +430,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

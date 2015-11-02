@@ -41,11 +41,11 @@ extern "C" {
 
 #define	LM87_DEVID 0x2e
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 lm87_reset(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 lm87_reconfigure(
 	__in		efx_nic_t *enp);
 
@@ -63,7 +63,7 @@ lm87_reconfigure(
 	(1ULL << EFX_MON_STAT_AIN1) | \
 	(1ULL << EFX_MON_STAT_AIN2)
 
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 lm87_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,

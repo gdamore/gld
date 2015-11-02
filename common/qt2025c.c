@@ -40,14 +40,14 @@
 
 #if EFSYS_OPT_PHY_QT2025C
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2025c_led_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t led1;
 	efx_word_t led2;
-	efx_rc_t rc;
+	int rc;
 
 #if EFSYS_OPT_PHY_LED_CONTROL
 
@@ -96,19 +96,19 @@ qt2025c_led_cfg(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #if EFSYS_OPT_LOOPBACK
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2025c_loopback_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* Set static mode appropriately */
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
@@ -167,20 +167,20 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 #endif	/* EFSYS_OPT_LOOPBACK */
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2025c_version_get(
 	__in		efx_nic_t *enp,
 	__out_ecount(4)	uint8_t version[])
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PCS_MMD,
 	    FW_VERSION1_REG, &word)) != 0)
@@ -208,7 +208,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -218,7 +218,7 @@ fail1:
  * in qt2025c_select_phy_mode are condensed, and easier to compare
  * directly with the data sheet.
  */
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2025c_mdio_write(
 	__in		efx_nic_t *enp,
 	__in		uint8_t mmd,
@@ -227,7 +227,7 @@ qt2025c_mdio_write(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	EFX_POPULATE_WORD_1(word, EFX_WORD_0, value);
 	rc = falcon_mdio_write(enp, epp->ep_port, mmd, addr, &word);
@@ -235,11 +235,11 @@ qt2025c_mdio_write(
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2025c_restart_firmware(
 	__in		efx_nic_t *enp)
 {
-	efx_rc_t rc;
+	int rc;
 
 	/* Restart microcontroller execution of firmware from RAM */
 	if ((rc = qt2025c_mdio_write(enp, 3, 0xe854, 0x00c0)) != 0)
@@ -254,12 +254,12 @@ qt2025c_restart_firmware(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2025c_wait_heartbeat(
 	__in		efx_nic_t *enp)
 {
@@ -267,7 +267,7 @@ qt2025c_wait_heartbeat(
 	efx_word_t word;
 	unsigned int count;
 	uint8_t heartb;
-	efx_rc_t rc;
+	int rc;
 
 	/* Read the initial heartbeat */
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PCS_MMD,
@@ -297,12 +297,12 @@ qt2025c_wait_heartbeat(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2025c_wait_firmware(
 	__in		efx_nic_t *enp)
 {
@@ -310,7 +310,7 @@ qt2025c_wait_firmware(
 	efx_word_t word;
 	unsigned int count;
 	uint16_t status;
-	efx_rc_t rc;
+	int rc;
 
 	count = 0;
 	do {
@@ -331,17 +331,17 @@ qt2025c_wait_firmware(
 	rc = ENOTACTIVE;
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2025c_wait_reset(
 	__in		efx_nic_t *enp)
 {
 	boolean_t retry = B_TRUE;
-	efx_rc_t rc;
+	int rc;
 
 	/*
 	 * Bug17689: occasionally heartbeat starts but firmware status
@@ -370,18 +370,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2025c_reset(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	uint8_t version[4];
-	efx_rc_t rc;
+	int rc;
 
 	/* Pull the external reset line */
 	falcon_nic_phy_reset(enp);
@@ -402,12 +402,12 @@ qt2025c_reset(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2025c_select_phy_mode(
 	__in		efx_nic_t *enp)
 {
@@ -415,7 +415,7 @@ qt2025c_select_phy_mode(
 	efx_word_t word;
 	uint16_t phy_op_mode;
 	int i;
-	efx_rc_t rc;
+	int rc;
 
 	/*
 	 * Only 2.0.1.0+ PHY firmware supports the more optimal SFP+
@@ -572,17 +572,17 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2025c_reconfigure(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = qt2025c_select_phy_mode(enp)) != 0)
 		goto fail1;
@@ -611,17 +611,17 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2025c_verify(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_pkg_verify(enp, epp->ep_port, QT2025C_MMD_MASK)) != 0)
 		goto fail1;
@@ -629,19 +629,19 @@ qt2025c_verify(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2025c_uplink_check(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *upp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if (epp->ep_mac_type != EFX_MAC_FALCON_XMAC) {
 		rc = ENOTSUP;
@@ -663,19 +663,19 @@ qt2025c_uplink_check(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 /* Recover from bug17190 by moving into and out of PMA loopback */
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2025c_bug17190_workaround(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port,
 	    PMA_PMD_MMD, MMD_CONTROL1_REG, &word)) != 0)
@@ -699,12 +699,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2025c_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t *modep,
@@ -717,7 +717,7 @@ qt2025c_downlink_check(
 	boolean_t broken;
 	boolean_t ok;
 	boolean_t up;
-	efx_rc_t rc;
+	int rc;
 
 	mmds = (1 << PMA_PMD_MMD) | (1 << PCS_MMD) | (1 << PHY_XS_MMD);
 #if EFSYS_OPT_LOOPBACK
@@ -783,18 +783,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2025c_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_mmd_oui_get(enp, epp->ep_port, PMA_PMD_MMD, ouip)) != 0)
 		goto fail1;
@@ -802,7 +802,7 @@ qt2025c_oui_get(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -816,7 +816,7 @@ fail1:
 	_NOTE(CONSTANTCONDITION)					\
 	} while (B_FALSE)
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 qt2025c_build_get(
 	__in		efx_nic_t *enp,
 	__out		uint8_t *yp,
@@ -825,7 +825,7 @@ qt2025c_build_get(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PCS_MMD,
 	    FW_BUILD1_REG, &word)) != 0)
@@ -852,20 +852,20 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 qt2025c_pma_pmd_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_STATUS1_REG, &word)) != 0)
@@ -888,16 +888,16 @@ qt2025c_pma_pmd_stats_update(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 qt2025c_pcs_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
@@ -905,7 +905,7 @@ qt2025c_pcs_stats_update(
 	uint8_t yy;
 	uint8_t mm;
 	uint8_t dd;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PCS_MMD,
 	    PCS_STATUS1_REG, &word)) != 0)
@@ -971,20 +971,20 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 qt2025c_phy_xs_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PHY_XS_MMD,
 	    PHY_XS_STATUS1_REG, &word)) != 0)
@@ -1024,22 +1024,22 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 qt2025c_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_nic_cfg_t *encp = &(enp->en_nic_cfg);
 	uint64_t mask = 0;
 	uint32_t oui;
-	efx_rc_t rc;
+	int rc;
 
 	_NOTE(ARGUNUSED(esmp))
 
@@ -1069,7 +1069,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1091,7 +1091,7 @@ qt2025c_prop_name(
 }
 #endif	/* EFSYS_OPT_NAMES */
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2025c_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
@@ -1105,7 +1105,7 @@ qt2025c_prop_get(
 	return (ENOTSUP);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 qt2025c_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,

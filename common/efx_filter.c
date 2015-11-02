@@ -39,7 +39,7 @@
 
 #if EFSYS_OPT_FALCON || EFSYS_OPT_SIENA
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falconsiena_filter_init(
 	__in		efx_nic_t *enp);
 
@@ -47,22 +47,22 @@ static			void
 falconsiena_filter_fini(
 	__in		efx_nic_t *enp);
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falconsiena_filter_restore(
 	__in		efx_nic_t *enp);
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falconsiena_filter_add(
 	__in		efx_nic_t *enp,
 	__inout		efx_filter_spec_t *spec,
 	__in		boolean_t may_replace);
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falconsiena_filter_delete(
 	__in		efx_nic_t *enp,
 	__inout		efx_filter_spec_t *spec);
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falconsiena_filter_supported_filters(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *list,
@@ -106,7 +106,7 @@ static efx_filter_ops_t	__efx_filter_hunt_ops = {
 };
 #endif /* EFSYS_OPT_HUNTINGTON */
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_filter_insert(
 	__in		efx_nic_t *enp,
 	__inout		efx_filter_spec_t *spec)
@@ -120,7 +120,7 @@ efx_filter_insert(
 	return (efop->efo_add(enp, spec, B_FALSE));
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_filter_remove(
 	__in		efx_nic_t *enp,
 	__inout		efx_filter_spec_t *spec)
@@ -138,11 +138,11 @@ efx_filter_remove(
 	return (efop->efo_delete(enp, spec));
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_filter_restore(
 	__in		efx_nic_t *enp)
 {
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_mod_flags, &, EFX_MOD_FILTER);
 
@@ -152,17 +152,17 @@ efx_filter_restore(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_filter_init(
 	__in		efx_nic_t *enp)
 {
 	efx_filter_ops_t *efop;
-	efx_rc_t rc;
+	int rc;
 
 	/* Check that efx_filter_spec_t is 64 bytes. */
 	EFX_STATIC_ASSERT(sizeof (efx_filter_spec_t) == 64);
@@ -206,7 +206,7 @@ efx_filter_init(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	enp->en_efop = NULL;
 	enp->en_mod_flags &= ~EFX_MOD_FILTER;
@@ -227,13 +227,13 @@ efx_filter_fini(
 	enp->en_mod_flags &= ~EFX_MOD_FILTER;
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_filter_supported_filters(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *list,
 	__out		size_t *length)
 {
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_mod_flags, &, EFX_MOD_PROBE);
@@ -246,12 +246,12 @@ efx_filter_supported_filters(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 efx_filter_reconfigure(
 	__in				efx_nic_t *enp,
 	__in_ecount(6)			uint8_t const *mac_addr,
@@ -262,7 +262,7 @@ efx_filter_reconfigure(
 	__in_ecount(6*count)		uint8_t const *addrs,
 	__in				int count)
 {
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_mod_flags, &, EFX_MOD_PROBE);
@@ -279,7 +279,7 @@ efx_filter_reconfigure(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -321,7 +321,7 @@ efx_filter_spec_init_tx(
 /*
  *  Specify IPv4 host, transport protocol and port in a filter specification
  */
-__checkReturn		efx_rc_t
+__checkReturn		int
 efx_filter_spec_set_ipv4_local(
 	__inout		efx_filter_spec_t *spec,
 	__in		uint8_t proto,
@@ -343,7 +343,7 @@ efx_filter_spec_set_ipv4_local(
 /*
  * Specify IPv4 hosts, transport protocol and ports in a filter specification
  */
-__checkReturn		efx_rc_t
+__checkReturn		int
 efx_filter_spec_set_ipv4_full(
 	__inout		efx_filter_spec_t *spec,
 	__in		uint8_t proto,
@@ -370,7 +370,7 @@ efx_filter_spec_set_ipv4_full(
 /*
  * Specify local Ethernet address and/or VID in filter specification
  */
-__checkReturn		efx_rc_t
+__checkReturn		int
 efx_filter_spec_set_eth_local(
 	__inout		efx_filter_spec_t *spec,
 	__in		uint16_t vid,
@@ -396,7 +396,7 @@ efx_filter_spec_set_eth_local(
 /*
  * Specify matching otherwise-unmatched unicast in a filter specification
  */
-__checkReturn		efx_rc_t
+__checkReturn		int
 efx_filter_spec_set_uc_def(
 	__inout		efx_filter_spec_t *spec)
 {
@@ -409,7 +409,7 @@ efx_filter_spec_set_uc_def(
 /*
  * Specify matching otherwise-unmatched multicast in a filter specification
  */
-__checkReturn		efx_rc_t
+__checkReturn		int
 efx_filter_spec_set_mc_def(
 	__inout		efx_filter_spec_t *spec)
 {
@@ -439,12 +439,12 @@ efx_filter_spec_set_mc_def(
  */
 #define	FILTER_CTL_SRCH_MAX 200
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falconsiena_filter_spec_from_gen_spec(
 	__out		falconsiena_filter_spec_t *fs_spec,
 	__in		efx_filter_spec_t *gen_spec)
 {
-	efx_rc_t rc;
+	int rc;
 	boolean_t is_full = B_FALSE;
 
 	if (gen_spec->efs_flags & EFX_FILTER_FLAG_TX)
@@ -588,7 +588,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -906,14 +906,14 @@ falconsiena_filter_build(
 	return (key);
 }
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falconsiena_filter_push_entry(
 	__inout			efx_nic_t *enp,
 	__in			falconsiena_filter_type_t type,
 	__in			int index,
 	__in			efx_oword_t *eop)
 {
-	efx_rc_t rc;
+	int rc;
 
 	switch (type) {
 	case EFX_FS_FILTER_RX_TCP_FULL:
@@ -983,7 +983,7 @@ falconsiena_filter_equal(
 	return (B_TRUE);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falconsiena_filter_search(
 	__in		falconsiena_filter_tbl_t *fsftp,
 	__in		falconsiena_filter_spec_t *spec,
@@ -1066,14 +1066,14 @@ falconsiena_filter_tbl_clear(
 	EFSYS_UNLOCK(enp->en_eslp, state);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falconsiena_filter_init(
 	__in		efx_nic_t *enp)
 {
 	falconsiena_filter_t *fsfp;
 	falconsiena_filter_tbl_t *fsftp;
 	int tbl_id;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_KMEM_ALLOC(enp->en_esip, sizeof (falconsiena_filter_t), fsfp);
 
@@ -1155,7 +1155,7 @@ fail2:
 	falconsiena_filter_fini(enp);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 	return (rc);
 }
 
@@ -1199,7 +1199,7 @@ falconsiena_filter_fini(
 }
 
 /* Restore filter state after a reset */
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falconsiena_filter_restore(
 	__in		efx_nic_t *enp)
 {
@@ -1210,7 +1210,7 @@ falconsiena_filter_restore(
 	efx_oword_t filter;
 	int filter_idx;
 	int state;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_LOCK(enp->en_eslp, state);
 
@@ -1242,20 +1242,20 @@ fail2:
 	EFSYS_PROBE(fail2);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	EFSYS_UNLOCK(enp->en_eslp, state);
 
 	return (rc);
 }
 
-static	 __checkReturn	efx_rc_t
+static	 __checkReturn	int
 falconsiena_filter_add(
 	__in		efx_nic_t *enp,
 	__inout		efx_filter_spec_t *spec,
 	__in		boolean_t may_replace)
 {
-	efx_rc_t rc;
+	int rc;
 	falconsiena_filter_spec_t fs_spec;
 	falconsiena_filter_t *fsfp = enp->en_filter.ef_falconsiena_filter;
 	falconsiena_filter_tbl_id_t tbl_id;
@@ -1328,16 +1328,16 @@ fail2:
 	EFSYS_PROBE(fail2);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 	return (rc);
 }
 
-static	 __checkReturn	efx_rc_t
+static	 __checkReturn	int
 falconsiena_filter_delete(
 	__in		efx_nic_t *enp,
 	__inout		efx_filter_spec_t *spec)
 {
-	efx_rc_t rc;
+	int rc;
 	falconsiena_filter_spec_t fs_spec;
 	falconsiena_filter_t *fsfp = enp->en_filter.ef_falconsiena_filter;
 	falconsiena_filter_tbl_id_t tbl_id;
@@ -1380,13 +1380,13 @@ fail2:
 	EFSYS_PROBE(fail2);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 	return (rc);
 }
 
 #define	MAX_SUPPORTED 4
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falconsiena_filter_supported_filters(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *list,
@@ -1394,7 +1394,7 @@ falconsiena_filter_supported_filters(
 {
 	int index = 0;
 	uint32_t rx_matches[MAX_SUPPORTED];
-	efx_rc_t rc;
+	int rc;
 
 	if (list == NULL) {
 		rc = EINVAL;

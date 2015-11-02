@@ -37,14 +37,14 @@
 
 #if EFSYS_OPT_FALCON
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 xphy_mmd_reset_wait(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
 	__in		uint8_t mmd)
 {
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	/* The Clause 22 extenion MMD does not implement IEEE registers */
 	if (mmd == CL22EXT_MMD) {
@@ -82,19 +82,19 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 xphy_pkg_wait(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
 	__in		uint32_t mask)
 {
 	uint8_t mmd;
-	efx_rc_t rc;
+	int rc;
 
 	for (mmd = 0; mmd <= MAXMMD; mmd++) {
 		/* Only check MMDs in the mask */
@@ -116,12 +116,12 @@ xphy_pkg_wait(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 xphy_pkg_verify(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
@@ -129,7 +129,7 @@ xphy_pkg_verify(
 {
 	uint8_t mmd;
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* Find the first MMD */
 	for (mmd = 0; mmd <= MAXMMD; mmd++) {
@@ -208,12 +208,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 xphy_mmd_oui_get(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
@@ -221,7 +221,7 @@ xphy_mmd_oui_get(
 	__out		uint32_t *ouip)
 {
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* The Clause 22 extenion MMD does not implement IEEE registers */
 	if (mmd == CL22EXT_MMD) {
@@ -248,12 +248,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 xphy_mmd_check(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
@@ -261,7 +261,7 @@ xphy_mmd_check(
 	__out		boolean_t *upp)
 {
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* Reset the latched status and fault flags */
 	if ((rc = falcon_mdio_read(enp, port, mmd, MMD_STATUS1_REG,
@@ -289,19 +289,19 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 xphy_mmd_fault(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
 	__out		boolean_t *upp)
 {
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, port, PHY_XS_MMD,
 	    MMD_STATUS2_REG, &word)) != 0)
@@ -312,12 +312,12 @@ xphy_mmd_fault(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 xphy_mmd_loopback_set(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
@@ -325,7 +325,7 @@ xphy_mmd_loopback_set(
 	__in		boolean_t on)
 {
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* The Clause 22 extenion MMD does not implement IEEE registers */
 	if (mmd == CL22EXT_MMD) {
@@ -353,7 +353,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

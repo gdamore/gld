@@ -38,7 +38,7 @@
 
 #if EFSYS_OPT_SIENA
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 siena_vpd_get_static(
 	__in				efx_nic_t *enp,
 	__in				unsigned int partn,
@@ -54,7 +54,7 @@ siena_vpd_get_static(
 	unsigned int hdr_length;
 	unsigned int pos;
 	unsigned int region;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(partn == MC_CMD_NVRAM_TYPE_STATIC_CFG_PORT0 ||
 		    partn == MC_CMD_NVRAM_TYPE_STATIC_CFG_PORT1);
@@ -149,12 +149,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_vpd_init(
 	__in			efx_nic_t *enp)
 {
@@ -162,7 +162,7 @@ siena_vpd_init(
 	caddr_t svpd = NULL;
 	unsigned partn;
 	size_t size = 0;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_SIENA);
 
@@ -193,19 +193,19 @@ fail2:
 
 	EFSYS_KMEM_FREE(enp->en_esip, size, svpd);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_vpd_size(
 	__in			efx_nic_t *enp,
 	__out			size_t *sizep)
 {
 	efx_mcdi_iface_t *emip = &(enp->en_mcdi.em_emip);
 	unsigned int partn;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_SIENA);
 
@@ -227,12 +227,12 @@ siena_vpd_size(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_vpd_read(
 	__in			efx_nic_t *enp,
 	__out_bcount(size)	caddr_t data,
@@ -244,7 +244,7 @@ siena_vpd_read(
 	unsigned int vpd_offset;
 	unsigned int dcfg_partn;
 	size_t dcfg_size;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_SIENA);
 
@@ -279,12 +279,12 @@ fail2:
 
 	EFSYS_KMEM_FREE(enp->en_esip, dcfg_size, dcfg);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_vpd_verify(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
@@ -297,7 +297,7 @@ siena_vpd_verify(
 	unsigned int scont;
 	unsigned int dcont;
 
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_SIENA);
 
@@ -354,19 +354,19 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_vpd_reinit(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
 	__in			size_t size)
 {
 	boolean_t wantpid;
-	efx_rc_t rc;
+	int rc;
 
 	/*
 	 * Only create a PID if the dynamic cfg doesn't have one
@@ -396,12 +396,12 @@ siena_vpd_reinit(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_vpd_get(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
@@ -410,7 +410,7 @@ siena_vpd_get(
 {
 	unsigned int offset;
 	uint8_t length;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_SIENA);
 
@@ -440,19 +440,19 @@ siena_vpd_get(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_vpd_set(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
 	__in			size_t size,
 	__in			efx_vpd_value_t *evvp)
 {
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_SIENA);
 
@@ -477,12 +477,12 @@ siena_vpd_set(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_vpd_next(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
@@ -495,7 +495,7 @@ siena_vpd_next(
 	return (ENOTSUP);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 siena_vpd_write(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
@@ -510,7 +510,7 @@ siena_vpd_write(
 	uint8_t cksum;
 	size_t partn_size, dcfg_size;
 	size_t vpd_length;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_SIENA);
 
@@ -585,7 +585,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

@@ -38,7 +38,7 @@
 
 #if EFSYS_OPT_PHY_NULL
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 nullphy_reset(
 	__in		efx_nic_t *enp)
 {
@@ -49,14 +49,14 @@ nullphy_reset(
 	return (0);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 nullphy_reconfigure(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
 	efx_word_t check;
-	efx_rc_t rc;
+	int rc;
 
 	_NOTE(ARGUNUSED(enp))
 
@@ -85,12 +85,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 nullphy_verify(
 	__in		efx_nic_t *enp)
 {
@@ -99,7 +99,7 @@ nullphy_verify(
 	return (ENOTSUP);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 nullphy_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t *modep,
@@ -115,7 +115,7 @@ nullphy_downlink_check(
 	return (0);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 nullphy_lp_cap_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *maskp)
@@ -125,7 +125,7 @@ nullphy_lp_cap_get(
 	return (ENOTSUP);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 nullphy_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip)
@@ -137,11 +137,11 @@ nullphy_oui_get(
 
 #if EFSYS_OPT_PHY_STATS
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 nullphy_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	_NOTE(ARGUNUSED(enp, esmp, stat))
 
@@ -165,7 +165,7 @@ nullphy_prop_name(
 }
 #endif	/* EFSYS_OPT_NAMES */
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 nullphy_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
@@ -179,7 +179,7 @@ nullphy_prop_get(
 	return (ENOTSUP);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 nullphy_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,

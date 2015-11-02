@@ -34,19 +34,19 @@
 #include "efx_impl.h"
 
 #if EFSYS_OPT_FALCON || EFSYS_OPT_SIENA
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 falconsiena_pktfilter_set(
 	__in				efx_nic_t *enp,
 	__in				boolean_t unicst,
 	__in				boolean_t brdcst);
 #if EFSYS_OPT_MCAST_FILTER_LIST
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 falconsiena_pktfilter_mcast_list_set(
 	__in				efx_nic_t *enp,
 	__in				uint8_t const *addrs,
 	__in				int count);
 #endif /* EFSYS_OPT_MCAST_FILTER_LIST */
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 falconsiena_pktfilter_mcast_all(
 	__in				efx_nic_t *enp);
 #endif /* EFSYS_OPT_FALCON || EFSYS_OPT_SIENA */
@@ -81,11 +81,11 @@ static efx_pktfilter_ops_t	__efx_pktfilter_hunt_ops = {
 };
 #endif /* EFSYS_OPT_HUNTINGTON */
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 efx_pktfilter_init(
 	__in				efx_nic_t *enp)
 {
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_mod_flags, &, EFX_MOD_PROBE);
@@ -123,7 +123,7 @@ efx_pktfilter_init(
 
 	return (0);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	enp->en_epfop = NULL;
 	enp->en_mod_flags &= ~EFX_MOD_PKTFILTER;
@@ -138,14 +138,14 @@ efx_pktfilter_fini(
 	enp->en_mod_flags &= ~EFX_MOD_PKTFILTER;
 }
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 efx_pktfilter_set(
 	__in				efx_nic_t *enp,
 	__in				boolean_t unicst,
 	__in				boolean_t brdcst)
 {
 	efx_pktfilter_ops_t *epfop = enp->en_epfop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_mod_flags, &, EFX_MOD_PKTFILTER);
 
@@ -155,21 +155,21 @@ efx_pktfilter_set(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #if EFSYS_OPT_MCAST_FILTER_LIST
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 efx_pktfilter_mcast_list_set(
 	__in				efx_nic_t *enp,
 	__in_ecount(6*count)		uint8_t const *addrs,
 	__in				int count)
 {
 	efx_pktfilter_ops_t *epfop = enp->en_epfop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_mod_flags, &, EFX_MOD_PKTFILTER);
 
@@ -179,19 +179,19 @@ efx_pktfilter_mcast_list_set(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #endif /* EFSYS_OPT_MCAST_FILTER_LIST */
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 efx_pktfilter_mcast_all(
 	__in				efx_nic_t *enp)
 {
 	efx_pktfilter_ops_t *epfop = enp->en_epfop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_mod_flags, &, EFX_MOD_PKTFILTER);
 
@@ -199,14 +199,14 @@ efx_pktfilter_mcast_all(
 		goto fail1;
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #if EFSYS_OPT_FALCON || EFSYS_OPT_SIENA
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 falconsiena_pktfilter_set(
 	__in				efx_nic_t *enp,
 	__in				boolean_t unicst,
@@ -216,7 +216,7 @@ falconsiena_pktfilter_set(
 	efx_mac_ops_t *emop = epp->ep_emop;
 	boolean_t old_unicst;
 	boolean_t old_brdcst;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_mod_flags, &, EFX_MOD_PORT);
@@ -233,7 +233,7 @@ falconsiena_pktfilter_set(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	epp->ep_all_unicst = old_unicst;
 	epp->ep_brdcst = old_brdcst;
@@ -243,7 +243,7 @@ fail1:
 
 #if EFSYS_OPT_MCAST_FILTER_LIST
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 falconsiena_pktfilter_mcast_list_set(
 	__in				efx_nic_t *enp,
 	__in_ecount(6*count)		uint8_t const *addrs,
@@ -251,7 +251,7 @@ falconsiena_pktfilter_mcast_list_set(
 {
 	unsigned int bucket[EFX_MAC_HASH_BITS];
 	int i;
-	efx_rc_t rc;
+	int rc;
 
 	for (i = 0; i < count; i++) {
 		/* Calculate hash bucket (IEEE 802.3 CRC32 of the MAC addr) */
@@ -266,20 +266,20 @@ falconsiena_pktfilter_mcast_list_set(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #endif /* EFSYS_OPT_MCAST_FILTER_LIST */
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 falconsiena_pktfilter_mcast_all(
 	__in				efx_nic_t *enp)
 {
 	unsigned int bucket[EFX_MAC_HASH_BITS];
 	int index;
-	efx_rc_t rc;
+	int rc;
 
 	for (index = 0; index < EFX_MAC_HASH_BITS; index++) {
 		bucket[index] = 1;
@@ -291,7 +291,7 @@ falconsiena_pktfilter_mcast_all(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

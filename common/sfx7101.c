@@ -40,13 +40,13 @@
 
 #if EFSYS_OPT_PHY_SFX7101
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sfx7101_power_on(
 	__in		efx_nic_t *enp,
 	__in		boolean_t reflash)
 {
 	efx_byte_t byte;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_i2c_check(enp, PCA9539)) != 0)
 		goto fail1;
@@ -137,19 +137,19 @@ fail2:
 	(void) falcon_i2c_write(enp, PCA9539, P0_CONFIG, (caddr_t)&byte, 1);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sfx7101_power_off(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
 	efx_byte_t byte;
-	efx_rc_t rc;
+	int rc;
 
 	/* Power down the LNPGA */
 	EFX_POPULATE_WORD_1(word, LNPGA_POWERDOWN, 1);
@@ -187,17 +187,17 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sfx7101_power(
 	__in		efx_nic_t *enp,
 	__in		boolean_t on)
 {
-	efx_rc_t rc;
+	int rc;
 
 	if (on) {
 		if ((rc = sfx7101_power_on(enp, B_FALSE)) != 0)
@@ -211,18 +211,18 @@ sfx7101_power(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sfx7101_reset(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_XCONTROL_REG, &word)) != 0)
@@ -244,19 +244,19 @@ sfx7101_reset(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sfx7101_an_set(
 	__in		efx_nic_t *enp,
 	__in		boolean_t on)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, AN_MMD,
 	    AN_CONTROL1_REG, &word)) != 0)
@@ -278,18 +278,18 @@ sfx7101_an_set(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sfx7101_led_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_LED_CONTROL_REG, &word)) != 0)
@@ -357,19 +357,19 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sfx7101_clock_cfg(
 	__in		efx_nic_t *enp,
 	__in		boolean_t enable)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	EFX_POPULATE_WORD_1(word, CLK312_EN, (enable) ? 1 : 0);
 
@@ -380,18 +380,18 @@ sfx7101_clock_cfg(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sfx7101_adv_cap_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* Check base page */
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, AN_MMD,
@@ -412,19 +412,19 @@ sfx7101_adv_cap_cfg(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #if EFSYS_OPT_LOOPBACK
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sfx7101_loopback_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	switch (epp->ep_loopback_type) {
 	case EFX_LOOPBACK_PHY_XS:
@@ -463,19 +463,19 @@ sfx7101_loopback_cfg(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 #endif	/* EFSYS_OPT_LOOPBACK */
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sfx7101_reconfigure(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	/* Wait for the firmware boot to complete */
 	count = 0;
@@ -561,17 +561,17 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sfx7101_verify(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_pkg_verify(enp, epp->ep_port, SFX7101_MMD_MASK)) != 0)
 		goto fail1;
@@ -579,19 +579,19 @@ sfx7101_verify(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sfx7101_uplink_check(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *upp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if (epp->ep_mac_type != EFX_MAC_FALCON_XMAC) {
 		rc = ENOTSUP;
@@ -613,7 +613,7 @@ sfx7101_uplink_check(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -624,7 +624,7 @@ sfx7101_uplink_reset(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if (epp->ep_mac_type != EFX_MAC_FALCON_XMAC) {
 		rc = ENOTSUP;
@@ -709,17 +709,17 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sfx7101_lp_cap_get(
 	__in		efx_nic_t *enp,
 	__out		unsigned int *maskp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, AN_MMD,
 	    AN_LP_BP_CAP_REG, &word)) != 0)
@@ -755,12 +755,12 @@ sfx7101_lp_cap_get(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sfx7101_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t *modep,
@@ -772,7 +772,7 @@ sfx7101_downlink_check(
 	unsigned int fcntl = epp->ep_fcntl;
 	uint32_t common;
 	boolean_t up;
-	efx_rc_t rc;
+	int rc;
 
 #if EFSYS_OPT_LOOPBACK
 	switch (epp->ep_loopback_type) {
@@ -842,18 +842,18 @@ done:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sfx7101_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_mmd_oui_get(enp, epp->ep_port, PMA_PMD_MMD, ouip)) != 0)
 		goto fail1;
@@ -861,7 +861,7 @@ sfx7101_oui_get(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -875,7 +875,7 @@ fail1:
 	_NOTE(CONSTANTCONDITION)					\
 	} while (B_FALSE)
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sfx7101_rev_get(
 	__in		efx_nic_t *enp,
 	__out		uint16_t *majorp,
@@ -884,7 +884,7 @@ sfx7101_rev_get(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word[2];
-	efx_rc_t rc;
+	int rc;
 
 	/*
 	 * There appear to be two version string formats in use:
@@ -929,12 +929,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 sfx7101_pma_pmd_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
@@ -945,7 +945,7 @@ sfx7101_pma_pmd_stats_update(
 	uint16_t major;
 	uint16_t minor;
 	uint16_t micro;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_STATUS1_REG, &word)) != 0)
@@ -1013,12 +1013,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 sfx7101_pcs_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
@@ -1026,7 +1026,7 @@ sfx7101_pcs_stats_update(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PCS_MMD,
 	    PCS_STATUS1_REG, &word)) != 0)
@@ -1060,12 +1060,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 sfx7101_phy_xs_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
@@ -1073,7 +1073,7 @@ sfx7101_phy_xs_stats_update(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PHY_XS_MMD,
 	    PHY_XS_STATUS1_REG, &word)) != 0)
@@ -1113,12 +1113,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 sfx7101_an_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
@@ -1126,7 +1126,7 @@ sfx7101_an_stats_update(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, AN_MMD,
 	    AN_STATUS1_REG, &word)) != 0)
@@ -1151,12 +1151,12 @@ sfx7101_an_stats_update(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 sfx7101_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
@@ -1166,7 +1166,7 @@ sfx7101_stats_update(
 	efx_nic_cfg_t *encp = &(enp->en_nic_cfg);
 	uint64_t mask = 0;
 	uint32_t oui;
-	efx_rc_t rc;
+	int rc;
 
 	_NOTE(ARGUNUSED(esmp))
 
@@ -1201,7 +1201,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1223,7 +1223,7 @@ sfx7101_prop_name(
 }
 #endif	/* EFSYS_OPT_NAMES */
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sfx7101_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
@@ -1237,7 +1237,7 @@ sfx7101_prop_get(
 	return (ENOTSUP);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sfx7101_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
@@ -1254,7 +1254,7 @@ sfx7101_prop_set(
 
 #if EFSYS_OPT_NVRAM_SFX7101
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 sfx7101_loader_wait(
 	__in			efx_nic_t *enp)
 {
@@ -1262,7 +1262,7 @@ sfx7101_loader_wait(
 	efx_word_t word;
 	unsigned int count;
 	unsigned int response;
-	efx_rc_t rc;
+	int rc;
 
 	/* Wait up to 20s for the command to complete */
 	for (count = 0; count < 200; count++) {
@@ -1287,12 +1287,12 @@ sfx7101_loader_wait(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 sfx7101_program_loader(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
@@ -1300,7 +1300,7 @@ sfx7101_program_loader(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* Setup address of block transfer */
 	EFX_POPULATE_WORD_1(word, EFX_WORD_0, offset);
@@ -1325,12 +1325,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-__checkReturn		efx_rc_t
+__checkReturn		int
 sfx7101_nvram_size(
 	__in			efx_nic_t *enp,
 	__out			size_t *sizep)
@@ -1343,14 +1343,14 @@ sfx7101_nvram_size(
 	return (0);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 sfx7101_nvram_get_version(
 	__in			efx_nic_t *enp,
 	__out			uint32_t *subtypep,
 	__out_ecount(4)		uint16_t version[4])
 {
 	uint16_t major, minor, micro;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = sfx7101_rev_get(enp, &major, &minor, &micro)) != 0)
 		goto fail1;
@@ -1365,12 +1365,12 @@ sfx7101_nvram_get_version(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (0);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 sfx7101_nvram_rw_start(
 	__in			efx_nic_t *enp,
 	__out			size_t *block_sizep)
@@ -1379,7 +1379,7 @@ sfx7101_nvram_rw_start(
 	sfx7101_firmware_header_t header;
 	efx_word_t word;
 	unsigned int pos;
-	efx_rc_t rc;
+	int rc;
 
 	/* Ensure the PHY is on */
 	if ((rc = sfx7101_power_on(enp, B_TRUE)) != 0)
@@ -1506,7 +1506,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	/* Restore the original image */
 	sfx7101_nvram_rw_finish(enp);
@@ -1514,7 +1514,7 @@ fail1:
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 sfx7101_nvram_read_chunk(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
@@ -1526,7 +1526,7 @@ sfx7101_nvram_read_chunk(
 	unsigned int pos;
 	size_t chunk;
 	size_t words;
-	efx_rc_t rc;
+	int rc;
 
 	while (size > 0) {
 		chunk = MIN(size, FIRMWARE_BLOCK_SIZE);
@@ -1583,18 +1583,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn				efx_rc_t
+	__checkReturn				int
 sfx7101_nvram_erase(
 	__in					efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	EFX_POPULATE_WORD_1(word, EFX_BYTE_0, LOADER_CMD_ERASE_FLASH);
 	if ((rc = falcon_mdio_write(enp, epp->ep_port,
@@ -1604,12 +1604,12 @@ sfx7101_nvram_erase(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn				efx_rc_t
+	__checkReturn				int
 sfx7101_nvram_write_chunk(
 	__in					efx_nic_t *enp,
 	__in					unsigned int offset,
@@ -1621,7 +1621,7 @@ sfx7101_nvram_write_chunk(
 	unsigned int pos;
 	size_t chunk;
 	size_t words;
-	efx_rc_t rc;
+	int rc;
 
 	while (size > 0) {
 		chunk = MIN(size, FIRMWARE_BLOCK_SIZE);
@@ -1686,7 +1686,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1699,7 +1699,7 @@ sfx7101_nvram_rw_finish(
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
 	efx_byte_t byte;
-	efx_rc_t rc;
+	int rc;
 
 	EFX_SET_BYTE(byte);
 	EFX_SET_BYTE_FIELD(byte, P0_EN_1V2, 0);
@@ -1742,7 +1742,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 }
 
 #endif	/* EFSYS_OPT_NVRAM_SFX7101 */

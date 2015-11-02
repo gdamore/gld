@@ -44,7 +44,7 @@
 #include "falcon_xmac.h"
 #endif
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_mac_poll(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t	*link_modep)
@@ -56,7 +56,7 @@ falcon_mac_poll(
 	uint32_t lp_cap_mask;
 	boolean_t mac_up = B_TRUE;
 	boolean_t reconfigure_mac = B_FALSE;
-	efx_rc_t rc;
+	int rc;
 
 	/* Poll PHY for link state changes */
 	rc = epop->epo_downlink_check(enp, &link_mode, &fcntl, &lp_cap_mask);
@@ -130,12 +130,12 @@ poll_mac:
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_mac_up(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *mac_upp)
@@ -259,12 +259,12 @@ falcon_mac_wrapper_enable(
 	EFX_BAR_WRITEO(enp, FR_AZ_RX_CFG_REG, &oword);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_mac_wrapper_disable(
 	__in		efx_nic_t *enp)
 {
 	efx_oword_t oword;
-	efx_rc_t rc;
+	int rc;
 
 	EFX_BAR_READO(enp, FR_AZ_RX_CFG_REG, &oword);
 	EFX_SET_OWORD_FIELD(oword, FRF_BZ_RX_INGR_EN, 0);
@@ -281,14 +281,14 @@ falcon_mac_wrapper_disable(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #if EFSYS_OPT_LOOPBACK
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_mac_loopback_set(
 	__in		efx_nic_t *enp,
 	__in		efx_link_mode_t link_mode,
@@ -302,7 +302,7 @@ falcon_mac_loopback_set(
 	efx_qword_t qword;
 	uint32_t phy_loopback_mask;
 	boolean_t phy_loopback_changed;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -375,7 +375,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	epp->ep_loopback_type = old_loopback_type;
 	epp->ep_loopback_link_mode = old_loopback_link_mode;
@@ -388,7 +388,7 @@ fail1:
 
 #if EFSYS_OPT_MAC_STATS
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 falcon_mac_stats_upload(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp)

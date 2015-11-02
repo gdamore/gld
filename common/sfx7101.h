@@ -62,24 +62,24 @@ extern "C" {
 
 #define	SFX7101_BIST_MASK	0
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sfx7101_power(
 	__in		efx_nic_t *enp,
 	__in		boolean_t on);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sfx7101_reset(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sfx7101_reconfigure(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sfx7101_verify(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sfx7101_uplink_check(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *upp);
@@ -88,14 +88,14 @@ extern		void
 sfx7101_uplink_reset(
 	__in	efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sfx7101_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t *modep,
 	__out		unsigned int *fcntlp,
 	__out		uint32_t *lp_cap_maskp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sfx7101_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip);
@@ -135,7 +135,7 @@ sfx7101_oui_get(
 
 /* END MKCONFIG GENERATED Sfx7101PhyHeaderStatsMask */
 
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 sfx7101_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
@@ -154,14 +154,14 @@ sfx7101_prop_name(
 
 #endif
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sfx7101_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
 	__in		uint32_t flags,
 	__out		uint32_t *valp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sfx7101_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
@@ -171,34 +171,34 @@ sfx7101_prop_set(
 
 #if EFSYS_OPT_NVRAM_SFX7101
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sfx7101_nvram_size(
 	__in			efx_nic_t *enp,
 	__out			size_t *sizep);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sfx7101_nvram_get_version(
 	__in			efx_nic_t *enp,
 	__out			uint32_t *subtypep,
 	__out_ecount(4)		uint16_t version[4]);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sfx7101_nvram_rw_start(
 	__in			efx_nic_t *enp,
 	__out			size_t *block_sizep);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sfx7101_nvram_read_chunk(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
 	__out_bcount(size)	caddr_t data,
 	__in			size_t size);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sfx7101_nvram_erase(
 	__in			efx_nic_t *enp);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sfx7101_nvram_write_chunk(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,

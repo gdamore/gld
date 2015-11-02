@@ -38,13 +38,13 @@
 
 #if EFSYS_OPT_MAC_FALCON_GMAC
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_gmac_reset(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_oword_t oword;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(epp->ep_mac_type, ==, EFX_MAC_FALCON_GMAC);
 
@@ -64,7 +64,7 @@ falcon_gmac_reset(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -183,7 +183,7 @@ falcon_gmac_core_reconfigure(
 	EFSYS_SPIN(10);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_gmac_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *upp)
@@ -197,7 +197,7 @@ falcon_gmac_downlink_check(
 	return (ENOTSUP);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_gmac_reconfigure(
 	__in		efx_nic_t *enp)
 {
@@ -284,12 +284,12 @@ falcon_gmac_stat_read(
 	_NOTE(CONSTANTCONDITION)					\
 	} while (0)
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 falcon_gmac_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_MAC_NSTATS)	efsys_stat_t *stat,
-	__inout_opt			uint32_t *generationp)
+	__out_ecount(EFX_MAC_NSTATS)	efsys_stat_t *stat,
+	__out_opt			uint32_t *generationp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_oword_t oword;

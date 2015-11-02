@@ -39,14 +39,14 @@
 
 #if EFSYS_OPT_PHY_TXC43128
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 txc43128_bist_run(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	/* Set the BIST type */
 	EFX_POPULATE_WORD_1(word, BTYPE, TSDET_DECODE);
@@ -120,18 +120,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 txc43128_bist_check(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* Check lane 0 frame count */
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PCS_MMD, BRX0FRMCNT,
@@ -230,18 +230,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 txc43128_bist(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* Set PMA into loopback */
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PCS_MMD, MNDBLCFG,
@@ -280,18 +280,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 txc43128_led_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* PIO11 allows us to control the red LED */
 
@@ -342,18 +342,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 txc43128_preemphasis_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* XAUI settings */
 	EFX_POPULATE_WORD_2(word, TXPRE02, 0, TXPRE13, 0);
@@ -386,18 +386,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 txc43128_amplitude_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* XAUI settings */
 	EFX_POPULATE_WORD_2(word, TXAMP02, 25, TXAMP13, 25);
@@ -430,19 +430,19 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #if EFSYS_OPT_LOOPBACK
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 txc43128_loopback_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	switch (epp->ep_loopback_type) {
 	case EFX_LOOPBACK_PHY_XS:
@@ -481,20 +481,20 @@ txc43128_loopback_cfg(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 #endif	/* EFSYS_PHY_LOOPBACK */
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 txc43128_logic_reset(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_PROBE(logic_reset);
 
@@ -539,19 +539,19 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 txc43128_reset(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	/* Set the reset bit in the main control register */
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PHY_XS_MMD, MNCTL,
@@ -604,17 +604,17 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 txc43128_reconfigure(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_pkg_wait(enp, epp->ep_port, TXC43128_MMD_MASK)) != 0)
 		goto fail1;
@@ -660,17 +660,17 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 txc43128_verify(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_pkg_verify(enp, epp->ep_port, TXC43128_MMD_MASK)) != 0)
 		goto fail1;
@@ -678,19 +678,19 @@ txc43128_verify(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 txc43128_uplink_check(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *upp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if (epp->ep_mac_type != EFX_MAC_FALCON_XMAC) {
 		rc = ENOTSUP;
@@ -712,12 +712,12 @@ txc43128_uplink_check(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 txc43128_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t *modep,
@@ -726,7 +726,7 @@ txc43128_downlink_check(
 {
 	efx_port_t *epp = &(enp->en_port);
 	boolean_t up;
-	efx_rc_t rc;
+	int rc;
 
 #if EFSYS_OPT_LOOPBACK
 	switch (epp->ep_loopback_type) {
@@ -773,18 +773,18 @@ done:
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 txc43128_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_mmd_oui_get(enp, epp->ep_port, PMA_PMD_MMD,
 	    ouip)) != 0)
@@ -793,7 +793,7 @@ txc43128_oui_get(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -807,7 +807,7 @@ fail1:
 	_NOTE(CONSTANTCONDITION)					\
 	} while (B_FALSE)
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 txc43128_pma_pmd_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
@@ -815,7 +815,7 @@ txc43128_pma_pmd_stats_update(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_STATUS1_REG, &word)) != 0)
@@ -853,12 +853,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 txc43128_pcs_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
@@ -866,7 +866,7 @@ txc43128_pcs_stats_update(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PCS_MMD,
 	    PCS_STATUS1_REG, &word)) != 0)
@@ -889,12 +889,12 @@ txc43128_pcs_stats_update(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 txc43128_phy_xs_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
@@ -902,7 +902,7 @@ txc43128_phy_xs_stats_update(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PHY_XS_MMD,
 	    PHY_XS_STATUS1_REG, &word)) != 0)
@@ -942,12 +942,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 txc43128_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
@@ -957,7 +957,7 @@ txc43128_stats_update(
 	efx_nic_cfg_t *encp = &(enp->en_nic_cfg);
 	uint64_t mask = 0;
 	uint32_t oui;
-	efx_rc_t rc;
+	int rc;
 
 	_NOTE(ARGUNUSED(esmp))
 
@@ -987,7 +987,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1009,7 +1009,7 @@ txc43128_prop_name(
 }
 #endif	/* EFSYS_OPT_NAMES */
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 txc43128_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
@@ -1023,7 +1023,7 @@ txc43128_prop_get(
 	return (ENOTSUP);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 txc43128_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,

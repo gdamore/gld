@@ -53,13 +53,13 @@ typedef struct falcon_spi_dev_s {
 	size_t		fsd_write_size;
 } falcon_spi_dev_t;
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_nic_probe(
 	__in		efx_nic_t *enp);
 
 #if EFSYS_OPT_PCIE_TUNE
 
-extern 			efx_rc_t
+extern 			int
 falcon_nic_pcie_tune(
 	__in		efx_nic_t *enp,
 	__in		unsigned int nlanes);
@@ -68,14 +68,14 @@ falcon_nic_pcie_tune(
 
 #define	FALCON_NIC_CFG_RAW_SZ 0x400
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_nic_cfg_raw_read_verify(
 	__in		efx_nic_t *enp,
 	__in		uint32_t offset,
 	__in		uint32_t size,
 	__out		uint8_t *cfg);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_nic_cfg_build(
 	__in		efx_nic_t *enp,
 	__out		efx_nic_cfg_t *encp);
@@ -85,17 +85,17 @@ falcon_nic_cfg_free(
 	__in		efx_nic_t *enp,
 	__in		efx_nic_cfg_t *encp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_nic_reset(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_nic_init(
 	__in		efx_nic_t *enp);
 
 #if EFSYS_OPT_DIAG
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_nic_register_test(
 	__in		efx_nic_t *enp);
 
@@ -109,7 +109,7 @@ extern			void
 falcon_nic_unprobe(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_nic_mac_reset(
 	__in		efx_nic_t *enp);
 
@@ -117,13 +117,13 @@ extern			void
 falcon_mac_wrapper_enable(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_mac_wrapper_disable(
 	__in		efx_nic_t *enp);
 
 #if EFSYS_OPT_LOOPBACK
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_mac_loopback_set(
 	__in		efx_nic_t *enp,
 	__in		efx_link_mode_t link_mode,
@@ -135,7 +135,7 @@ extern			void
 falcon_nic_phy_reset(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_nvram_init(
 	__in			efx_nic_t *enp);
 
@@ -143,32 +143,32 @@ falcon_nvram_init(
 
 #if EFSYS_OPT_DIAG
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_nvram_test(
 	__in			efx_nic_t *enp);
 
 #endif	/* EFSYS_OPT_DIAG */
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_nvram_size(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
 	__out			size_t *sizep);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_nvram_get_version(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
 	__out			uint32_t *subtypep,
 	__out_ecount(4)		uint16_t version[4]);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_nvram_rw_start(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
 	__out			size_t *pref_chunkp);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_nvram_read_chunk(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -176,12 +176,12 @@ falcon_nvram_read_chunk(
 	__out_bcount(size)	caddr_t data,
 	__in			size_t size);
 
-extern	 __checkReturn		efx_rc_t
+extern	 __checkReturn		int
 falcon_nvram_erase(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_nvram_write_chunk(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -194,7 +194,7 @@ falcon_nvram_rw_finish(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_nvram_set_version(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -208,38 +208,38 @@ falcon_nvram_fini(
 
 #if EFSYS_OPT_VPD
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_vpd_size(
 	__in			efx_nic_t *enp,
 	__out			size_t *sizep);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_vpd_read(
 	__in			efx_nic_t *enp,
 	__out_bcount(size)	caddr_t data,
 	__in			size_t size);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_vpd_verify(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
 	__in			size_t size);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_vpd_get(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
 	__in			size_t size,
 	__inout			efx_vpd_value_t *evvp);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_vpd_set(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
 	__in			size_t size,
 	__in			efx_vpd_value_t *evvp);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_vpd_next(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
@@ -247,7 +247,7 @@ falcon_vpd_next(
 	__out			efx_vpd_value_t *evvp,
 	__inout			unsigned int *contp);
 
-extern __checkReturn		efx_rc_t
+extern __checkReturn		int
 falcon_vpd_write(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
@@ -255,13 +255,13 @@ falcon_vpd_write(
 
 #endif	/* EFSYS_OPT_VPD */
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_sram_init(
 	__in		efx_nic_t *enp);
 
 #if EFSYS_OPT_DIAG
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_sram_test(
 	__in		efx_nic_t *enp,
 	__in		efx_sram_pattern_fn_t func);
@@ -272,12 +272,12 @@ extern		void
 falcon_sram_fini(
 	__in	efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_i2c_check(
 	__in		efx_nic_t *enp,
 	__in		uint8_t devid);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_i2c_read(
 	__in			efx_nic_t *enp,
 	__in			uint8_t devid,
@@ -285,7 +285,7 @@ falcon_i2c_read(
 	__out_bcount(size)	caddr_t base,
 	__in			size_t size);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_i2c_write(
 	__in			efx_nic_t *enp,
 	__in			uint8_t devid,
@@ -295,14 +295,14 @@ falcon_i2c_write(
 
 #if EFSYS_OPT_PHY_NULL
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_i2c_recv(
 	__in			efx_nic_t *enp,
 	__in			uint8_t devid,
 	__out_bcount(size)	caddr_t base,
 	__in			size_t size);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_i2c_send(
 	__in			efx_nic_t *enp,
 	__in			uint8_t devid,
@@ -311,7 +311,7 @@ falcon_i2c_send(
 
 #endif	/* EFSYS_OPT_PHY_NULL */
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_mdio_write(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
@@ -319,7 +319,7 @@ falcon_mdio_write(
 	__in		uint16_t reg,
 	__in		efx_word_t *ewp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_mdio_read(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
@@ -329,26 +329,26 @@ falcon_mdio_read(
 
 #if EFSYS_OPT_MAC_STATS
 
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 falcon_mac_stats_upload(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp);
 
 #endif	/* EFSYS_OPT_MAC_STATS */
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_mac_poll(
        __in		efx_nic_t *enp,
        __out		efx_link_mode_t	*link_modep);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_mac_up(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *mac_upp);
 
 #if EFSYS_OPT_LOOPBACK
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_mac_loopback_set(
 	__in		efx_nic_t *enp,
 	__in		efx_link_mode_t link_mode,
@@ -362,7 +362,7 @@ typedef enum falcon_spi_type_e {
 	FALCON_SPI_NTYPES
 } falcon_spi_type_t;
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_spi_dev_read(
 	__in			efx_nic_t *enp,
 	__in			falcon_spi_type_t type,
@@ -370,7 +370,7 @@ falcon_spi_dev_read(
 	__out_bcount(size)	caddr_t base,
 	__in			size_t size);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_spi_dev_write(
 	__in			efx_nic_t *enp,
 	__in			falcon_spi_type_t type,
@@ -378,7 +378,7 @@ falcon_spi_dev_write(
 	__in_bcount(size)	caddr_t base,
 	__in			size_t size);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 falcon_spi_dev_erase(
 	__in			efx_nic_t *enp,
 	__in			falcon_spi_type_t type,

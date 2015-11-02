@@ -38,13 +38,13 @@
 
 #if EFSYS_OPT_MAC_FALCON_XMAC
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falcon_xmac_xgxs_reset(
 	__in		efx_nic_t *enp)
 {
 	efx_oword_t oword;
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	/* Reset the XGMAC via the Vendor Register */
 	EFX_POPULATE_OWORD_1(oword, FRF_AB_XX_RST_XX_EN, 1);
@@ -71,7 +71,7 @@ done:
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -223,7 +223,7 @@ falcon_xmac_core_reconfigure(
 	EFX_BAR_WRITEO(enp, FR_AB_XM_TX_PARAM_REG, &oword);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_xmac_reset(
 	__in		efx_nic_t *enp)
 {
@@ -232,7 +232,7 @@ falcon_xmac_reset(
 #if EFSYS_OPT_LOOPBACK
 	efx_qword_t mac_loopback_mask;
 #endif
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(epp->ep_mac_type, ==, EFX_MAC_FALCON_XMAC);
 
@@ -270,12 +270,12 @@ falcon_xmac_reset(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_xmac_reconfigure(
 	__in		efx_nic_t *enp)
 {
@@ -358,12 +358,12 @@ falcon_xmac_stat_read(
 	_NOTE(CONSTANTCONDITION)					\
 	} while (0)
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 falcon_xmac_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_MAC_NSTATS)	efsys_stat_t *stat,
-	__inout_opt			uint32_t *generationp)
+	__out_ecount(EFX_MAC_NSTATS)	efsys_stat_t *stat,
+	__out_opt			uint32_t *generationp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_oword_t oword;

@@ -459,39 +459,39 @@ extern "C" {
 #define	AN_REMOTE_RX_OK_LBN 12
 #define	AN_REMOTE_RX_OK_WIDTH 1
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 xphy_pkg_verify(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
 	__in		uint32_t mask);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 xphy_pkg_wait(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
 	__in		uint32_t mask);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 xphy_mmd_oui_get(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
 	__in		uint8_t mmd,
 	__out		uint32_t *ouip);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 xphy_mmd_check(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
 	__in		uint8_t mmd,
 	__out		boolean_t *upp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 xphy_mmd_fault(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,
 	__out		boolean_t *upp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 xphy_mmd_loopback_set(
 	__in		efx_nic_t *enp,
 	__in		uint8_t port,

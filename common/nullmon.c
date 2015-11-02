@@ -37,7 +37,7 @@
 
 #if EFSYS_OPT_MON_NULL
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 nullmon_reset(
 	__in		efx_nic_t *enp)
 {
@@ -46,7 +46,7 @@ nullmon_reset(
 	return (0);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 nullmon_reconfigure(
 	__in		efx_nic_t *enp)
 {
@@ -57,11 +57,11 @@ nullmon_reconfigure(
 
 #if EFSYS_OPT_MON_STATS
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 nullmon_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_MON_NSTATS)	efx_mon_stat_value_t *values)
+	__out_ecount(EFX_MON_NSTATS)	efx_mon_stat_value_t *values)
 {
 	_NOTE(ARGUNUSED(enp, esmp, values))
 

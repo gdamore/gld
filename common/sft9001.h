@@ -82,31 +82,31 @@ typedef enum sft9001_prop_e {
 	    ((1 << EFX_BIST_TYPE_PHY_CABLE_SHORT) |			\
 	    (1 << EFX_BIST_TYPE_PHY_CABLE_LONG))
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sft9001_reset(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sft9001_reconfigure(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sft9001_verify(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sft9001_uplink_check(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *upp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sft9001_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t *modep,
 	__out		unsigned int *fcntlp,
 	__out		uint32_t *lp_cap_maskp);
 
-extern __checkReturn	efx_rc_t
+extern __checkReturn	int
 sft9001_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip);
@@ -148,11 +148,11 @@ sft9001_oui_get(
 
 /* END MKCONFIG GENERATED Sft9001PhyHeaderStatsMask */
 
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 sft9001_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat);
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat);
 
 #endif	/* EFSYS_OPT_PHY_STATS */
 
@@ -167,14 +167,14 @@ sft9001_prop_name(
 
 #endif	/* EFSYS_OPT_NAMES */
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sft9001_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
 	__in		uint32_t flags,
 	__out		uint32_t *valp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 sft9001_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
@@ -184,34 +184,34 @@ sft9001_prop_set(
 
 #if EFSYS_OPT_NVRAM_SFT9001
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sft9001_nvram_size(
 	__in			efx_nic_t *enp,
 	__out			size_t *sizep);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sft9001_nvram_get_version(
 	__in			efx_nic_t *enp,
 	__out			uint32_t *subtypep,
 	__out_ecount(4)		uint16_t version[4]);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sft9001_nvram_rw_start(
 	__in			efx_nic_t *enp,
 	__out			size_t *block_sizep);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sft9001_nvram_read_chunk(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
 	__out_bcount(size)	caddr_t data,
 	__in			size_t size);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sft9001_nvram_erase(
 	__in			efx_nic_t *enp);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sft9001_nvram_write_chunk(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
@@ -242,12 +242,12 @@ typedef struct sft9001_firmware_header_s {
 
 #if EFSYS_OPT_BIST
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sft9001_bist_start(
 	__in			efx_nic_t *enp,
 	__in			efx_bist_type_t type);
 
-extern	__checkReturn		efx_rc_t
+extern	__checkReturn		int
 sft9001_bist_poll(
 	__in			efx_nic_t *enp,
 	__in			efx_bist_type_t type,

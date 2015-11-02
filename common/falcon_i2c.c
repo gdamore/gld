@@ -242,13 +242,13 @@ falcon_i2c_release(
 	*timep += 10000;
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falcon_i2c_wait(
 	__in		efx_nic_t *enp)
 {
 	falcon_i2c_t *fip = &(enp->en_u.falcon.enu_fip);
 	int count;
-	efx_rc_t rc;
+	int rc;
 
 	if (enp->en_u.falcon.enu_i2c_locked) {
 		rc = EBUSY;
@@ -280,12 +280,12 @@ done:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 falcon_i2c_byte_out(
 	__in		efx_nic_t *enp,
 	__in		uint8_t byte,
@@ -323,7 +323,7 @@ falcon_i2c_byte_in(
 	return (byte);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_i2c_check(
 	__in		efx_nic_t *enp,
 	__in		uint8_t devid)
@@ -334,7 +334,7 @@ falcon_i2c_check(
 	efsys_timestamp_t end;
 	efsys_timestamp_t expected;
 	unsigned int attempt;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -408,14 +408,14 @@ fail2:
 	EFSYS_PROBE(fail2);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	EFSYS_PREEMPT_ENABLE(pstate);
 	EFSYS_UNLOCK(enp->en_eslp, lstate);
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_i2c_read(
 	__in			efx_nic_t *enp,
 	__in			uint8_t devid,
@@ -430,7 +430,7 @@ falcon_i2c_read(
 	efsys_timestamp_t expected;
 	unsigned int attempt;
 	unsigned int i;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -523,14 +523,14 @@ fail2:
 	EFSYS_PROBE(fail2);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	EFSYS_PREEMPT_ENABLE(pstate);
 	EFSYS_UNLOCK(enp->en_eslp, lstate);
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_i2c_write(
 	__in			efx_nic_t *enp,
 	__in			uint8_t devid,
@@ -545,7 +545,7 @@ falcon_i2c_write(
 	efsys_timestamp_t expected;
 	unsigned int attempt;
 	unsigned int i;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -633,7 +633,7 @@ fail2:
 	EFSYS_PROBE(fail2);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	EFSYS_PREEMPT_ENABLE(pstate);
 	EFSYS_UNLOCK(enp->en_eslp, lstate);
@@ -642,7 +642,7 @@ fail1:
 
 #if EFSYS_OPT_PHY_NULL
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_i2c_recv(
 	__in			efx_nic_t *enp,
 	__in			uint8_t devid,
@@ -656,7 +656,7 @@ falcon_i2c_recv(
 	efsys_timestamp_t expected;
 	unsigned int attempt;
 	unsigned int i;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -734,14 +734,14 @@ fail2:
 	EFSYS_PROBE(fail2);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	EFSYS_PREEMPT_ENABLE(pstate);
 	EFSYS_UNLOCK(enp->en_eslp, lstate);
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_i2c_send(
 	__in			efx_nic_t *enp,
 	__in			uint8_t devid,
@@ -755,7 +755,7 @@ falcon_i2c_send(
 	efsys_timestamp_t expected;
 	unsigned int attempt;
 	unsigned int i;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -836,7 +836,7 @@ fail2:
 	EFSYS_PROBE(fail2);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	EFSYS_PREEMPT_ENABLE(pstate);
 	EFSYS_UNLOCK(enp->en_eslp, lstate);

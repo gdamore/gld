@@ -111,11 +111,7 @@ struct tlv_partition_header {
   uint32_t tag;
   uint32_t length;
   uint16_t type_id;
-/* 0 indicates the default segment (always located at offset 0), while other values
- * are for RFID-selectable presets that should immediately follow the default segment.
- * The default segment may also have preset > 0, which means that it is a preset
- * selected through an RFID command and copied by FW to the location at offset 0. */
-  uint16_t preset;
+  uint16_t reserved;
   uint32_t generation;
   uint32_t total_length;
 };
@@ -332,7 +328,7 @@ struct tlv_tmp_gubbins {
   uint64_t tx1_tags;     /* Bitmap */
   uint64_t dl_tags;      /* Bitmap */
   uint32_t flags;
-#define TLV_DPCPU_TX_STRIPE (1) /* No longer used, has no effect */
+#define TLV_DPCPU_TX_STRIPE (1) /* TX striping is on */
 #define TLV_DPCPU_BIU_TAGS  (2) /* Use BIU tag manager */
 #define TLV_DPCPU_TX0_TAGS  (4) /* tx0_tags is valid */
 #define TLV_DPCPU_TX1_TAGS  (8) /* tx1_tags is valid */
@@ -342,7 +338,7 @@ struct tlv_tmp_gubbins {
   int8_t with_rmon;             /* 0 -> off, 1 -> on, -1 -> leave alone */
   /* Consumed by clocks_hunt.c */
   int8_t clk_mode;             /* 0 -> off, 1 -> on, -1 -> leave alone */
-  /* No longer used, superseded by TLV_TAG_DESCRIPTOR_CACHE_CONFIG. */
+  /* Consumed by sram.c */
   int8_t rx_dc_size;           /* -1 -> leave alone */
   int8_t tx_dc_size;
   int16_t num_q_allocs;
@@ -660,7 +656,7 @@ struct tlv_mcast_filter_chaining {
 struct tlv_rate_limit {
   uint32_t tag;
   uint32_t length;
-  uint32_t rate_mbps; 
+  uint32_t rate_mbps;
 };
 
 /* OCSD Enable/Disable
@@ -687,43 +683,5 @@ struct tlv_ocsd {
 #define TLV_OCSD_DISABLED 0
 #define TLV_OCSD_ENABLED 1 /* Default */
 };
-
-/* Descriptor cache config.
- *
- * Sets the sizes of the TX and RX descriptor caches as a power of 2. It also
- * sets the total number of VIs. When the number of VIs is reduced VIs are taken
- * away from the highest numbered port first, so a vi_count of 1024 means 1024
- * VIs on the first port and 0 on the second (on a Torino).
- */
-
-#define TLV_TAG_DESCRIPTOR_CACHE_CONFIG    (0x101d0000)
-
-struct tlv_descriptor_cache_config {
-  uint32_t tag;
-  uint32_t length;
-  uint8_t rx_desc_cache_size;
-  uint8_t tx_desc_cache_size;
-  uint16_t vi_count;
-};
-#define TLV_DESC_CACHE_DEFAULT (0xff)
-#define TLV_VI_COUNT_DEFAULT   (0xffff)
-
-/* RX event merging config (read batching).
- *
- * Sets the global maximum number of events for the merging bins, and the
- * global timeout configuration for the bins.
- */
-
-#define TLV_TAG_RX_EVENT_MERGING_CONFIG    (0x101e0000)
-
-struct tlv_rx_event_merging_config {
-  uint32_t  tag;
-  uint32_t  length;
-  uint32_t  max_events;
-#define TLV_RX_EVENT_MERGING_CONFIG_MAX_EVENTS_MAX ((1 << 4) - 1)
-  uint32_t  timeout_ns;
-};
-#define TLV_RX_EVENT_MERGING_MAX_EVENTS_DEFAULT 7
-#define TLV_RX_EVENT_MERGING_TIMEOUT_NS_DEFAULT 8740
 
 #endif /* CI_MGMT_TLV_LAYOUT_H */

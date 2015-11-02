@@ -74,7 +74,7 @@ siena_sram_init(
 
 #if EFSYS_OPT_DIAG
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 siena_sram_test(
 	__in		efx_nic_t *enp,
 	__in		efx_sram_pattern_fn_t func)
@@ -85,7 +85,7 @@ siena_sram_test(
 	size_t rows;
 	unsigned int wptr;
 	unsigned int rptr;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_SIENA);
 
@@ -165,7 +165,7 @@ siena_sram_test(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	/* Restore back to FULL buffer table mode */
 	EFX_POPULATE_OWORD_1(oword, FRF_AZ_BUF_TBL_MODE, 1);

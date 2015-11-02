@@ -59,24 +59,24 @@ extern "C" {
 
 #define	QT2025C_BIST_MASK	0
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2025c_reset(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2025c_reconfigure(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2025c_verify(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2025c_uplink_check(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *upp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2025c_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t *modep,
@@ -87,7 +87,7 @@ extern			void
 qt2025c_downlink_reset(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2025c_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip);
@@ -124,7 +124,7 @@ qt2025c_oui_get(
 
 /* END MKCONFIG GENERATED Qt2025cPhyHeaderStatsMask */
 
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 qt2025c_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
@@ -143,14 +143,14 @@ qt2025c_prop_name(
 
 #endif
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2025c_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
 	__in		uint32_t flags,
 	__out		uint32_t *valp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 qt2025c_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,

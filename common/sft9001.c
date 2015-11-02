@@ -41,14 +41,14 @@
 
 #if EFSYS_OPT_PHY_SFT9001
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_short_reach_set(
 	__in		efx_nic_t *enp,
 	__in		boolean_t on)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port,
 	    PMA_PMD_MMD, PMA_PMD_PWR_BACKOFF_REG, &word)) != 0)
@@ -65,19 +65,19 @@ sft9001_short_reach_set(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_short_reach_get(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *onp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port,
 	    PMA_PMD_MMD, PMA_PMD_PWR_BACKOFF_REG, &word)) != 0)
@@ -88,19 +88,19 @@ sft9001_short_reach_get(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_robust_set(
 	__in		efx_nic_t *enp,
 	__in		boolean_t on)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_XCONTROL_REG, &word)) != 0)
@@ -117,19 +117,19 @@ sft9001_robust_set(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_robust_get(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *onp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_XCONTROL_REG, &word)) != 0)
@@ -140,19 +140,19 @@ sft9001_robust_get(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_an_set(
 	__in		efx_nic_t *enp,
 	__in		boolean_t on)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, AN_MMD,
 	    AN_CONTROL1_REG, &word)) != 0)
@@ -174,18 +174,18 @@ sft9001_an_set(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_gmii_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_XCONTROL_REG, &word)) != 0)
@@ -202,18 +202,18 @@ sft9001_gmii_cfg(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_clock_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_XCONTROL_REG, &word)) != 0)
@@ -236,18 +236,18 @@ sft9001_clock_cfg(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_adv_cap_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* Check base page */
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, AN_MMD,
@@ -343,19 +343,19 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #if EFSYS_OPT_LOOPBACK
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_loopback_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	switch (epp->ep_loopback_type) {
 	case EFX_LOOPBACK_PHY_XS:
@@ -407,19 +407,19 @@ sft9001_loopback_cfg(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 #endif	/* EFSYS_OPT_LOOPBACK */
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_led_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 #if EFSYS_OPT_PHY_LED_CONTROL
 
@@ -498,12 +498,12 @@ sft9001_led_cfg(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sft9001_reset(
 	__in		efx_nic_t *enp)
 {
@@ -526,13 +526,13 @@ sft9001_reset(
 	return (0);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sft9001_reconfigure(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	unsigned int count;
-	efx_rc_t rc;
+	int rc;
 
 	/* Wait for the firmware boot to complete */
 	count = 0;
@@ -628,17 +628,17 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sft9001_verify(
 	__in		efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_pkg_verify(enp, epp->ep_port, SFT9001_MMD_MASK)) != 0)
 		goto fail1;
@@ -646,19 +646,19 @@ sft9001_verify(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sft9001_uplink_check(
 	__in		efx_nic_t *enp,
 	__out		boolean_t *upp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if (epp->ep_mac_type != EFX_MAC_FALCON_XMAC) {
 		rc = ENOTSUP;
@@ -680,19 +680,19 @@ sft9001_uplink_check(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_lp_cap_get(
 	__in		efx_nic_t *enp,
 	__out		unsigned int *maskp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	*maskp = 0;
 
@@ -742,12 +742,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sft9001_downlink_check(
 	__in		efx_nic_t *enp,
 	__out		efx_link_mode_t *modep,
@@ -759,7 +759,7 @@ sft9001_downlink_check(
 	unsigned int lp_cap_mask = epp->ep_lp_cap_mask;
 	boolean_t up;
 	uint32_t common;
-	efx_rc_t rc;
+	int rc;
 
 #if EFSYS_OPT_LOOPBACK
 	switch (epp->ep_loopback_type) {
@@ -844,18 +844,18 @@ done:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sft9001_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = xphy_mmd_oui_get(enp, epp->ep_port, PMA_PMD_MMD, ouip)) != 0)
 		goto fail1;
@@ -863,7 +863,7 @@ sft9001_oui_get(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -875,7 +875,7 @@ fail1:
 	_NOTE(CONSTANTCONDITION)					\
 	} while (B_FALSE)
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_rev_get(
 	__in		efx_nic_t *enp,
 	__out		uint8_t *ap,
@@ -885,7 +885,7 @@ sft9001_rev_get(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_FW_REV0_REG, &word)) != 0)
@@ -906,18 +906,18 @@ sft9001_rev_get(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #if EFSYS_OPT_PHY_STATS
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 sft9001_pma_pmd_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
@@ -925,7 +925,7 @@ sft9001_pma_pmd_stats_update(
 	uint8_t b;
 	uint8_t c;
 	uint8_t d;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_STATUS1_REG, &word)) != 0)
@@ -994,20 +994,20 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 sft9001_pcs_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PCS_MMD,
 	    PCS_STATUS1_REG, &word)) != 0)
@@ -1041,20 +1041,20 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 sft9001_phy_xs_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PHY_XS_MMD,
 	    PHY_XS_STATUS1_REG, &word)) != 0)
@@ -1094,20 +1094,20 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 sft9001_an_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, AN_MMD,
 	    AN_STATUS1_REG, &word)) != 0)
@@ -1132,20 +1132,20 @@ sft9001_an_stats_update(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 sft9001_cl22ext_stats_update(
 	__in				efx_nic_t *enp,
 	__inout				uint64_t *maskp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, CL22EXT_MMD,
 	    CL22EXT_STATUS_REG, &word)) != 0)
@@ -1157,23 +1157,23 @@ sft9001_cl22ext_stats_update(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 sft9001_stats_update(
 	__in				efx_nic_t *enp,
 	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)	uint32_t *stat)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_nic_cfg_t *encp = &(enp->en_nic_cfg);
 	uint64_t mask = 0;
 	uint32_t oui;
-	efx_rc_t rc;
+	int rc;
 
 	_NOTE(ARGUNUSED(esmp))
 
@@ -1213,7 +1213,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1243,7 +1243,7 @@ sft9001_prop_name(
 }
 #endif	/* EFSYS_OPT_NAMES */
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sft9001_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
@@ -1251,7 +1251,7 @@ sft9001_prop_get(
 	__out		uint32_t *valp)
 {
 	uint32_t val;
-	efx_rc_t rc;
+	int rc;
 
 	switch (id) {
 	case SFT9001_SHORT_REACH: {
@@ -1293,19 +1293,19 @@ sft9001_prop_get(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sft9001_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
 	__in		uint32_t val)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_rc_t rc;
+	int rc;
 
 	switch (id) {
 	case SFT9001_SHORT_REACH:
@@ -1358,7 +1358,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1366,7 +1366,7 @@ fail1:
 
 #if EFSYS_OPT_NVRAM_SFT9001
 
-static	__checkReturn	efx_rc_t
+static	__checkReturn	int
 sft9001_ssr(
 	__in		efx_nic_t *enp,
 	__in		boolean_t loader)
@@ -1375,7 +1375,7 @@ sft9001_ssr(
 	efx_oword_t oword;
 	efx_word_t word;
 	int state;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_LOCK(enp->en_eslp, state);
 
@@ -1407,7 +1407,7 @@ sft9001_ssr(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 out:
 	/* Unlock the I2C bus and restore GPIO(3) */
@@ -1423,7 +1423,7 @@ out:
 	return (rc);
 }
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 sft9001_loader_wait(
 	__in			efx_nic_t *enp)
 {
@@ -1431,7 +1431,7 @@ sft9001_loader_wait(
 	efx_word_t word;
 	unsigned int count;
 	unsigned int response;
-	efx_rc_t rc;
+	int rc;
 
 	/* Wait up to 20s for the command to complete */
 	for (count = 0; count < 200; count++) {
@@ -1456,12 +1456,12 @@ sft9001_loader_wait(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 sft9001_program_loader(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
@@ -1469,7 +1469,7 @@ sft9001_program_loader(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* Setup address of block transfer */
 	EFX_POPULATE_WORD_1(word, EFX_WORD_0, offset);
@@ -1494,12 +1494,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-__checkReturn		efx_rc_t
+__checkReturn		int
 sft9001_nvram_size(
 	__in			efx_nic_t *enp,
 	__out			size_t *sizep)
@@ -1512,7 +1512,7 @@ sft9001_nvram_size(
 	return (0);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 sft9001_nvram_get_version(
 	__in			efx_nic_t *enp,
 	__out			uint32_t *subtypep,
@@ -1520,7 +1520,7 @@ sft9001_nvram_get_version(
 {
 	efx_nic_cfg_t *encp = &(enp->en_nic_cfg);
 	uint8_t a, b, c, d;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = sft9001_rev_get(enp, &a, &b, &c, &d)) != 0)
 		goto fail1;
@@ -1545,12 +1545,12 @@ sft9001_nvram_get_version(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (0);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 sft9001_nvram_rw_start(
 	__in			efx_nic_t *enp,
 	__out			size_t *block_sizep)
@@ -1559,7 +1559,7 @@ sft9001_nvram_rw_start(
 	sft9001_firmware_header_t header;
 	unsigned int pos;
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* Reboot without starting the firmware */
 	if ((rc = sft9001_ssr(enp, B_TRUE)) != 0)
@@ -1669,7 +1669,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	/* Reboot the PHY into the main firmware */
 	(void) sft9001_ssr(enp, B_FALSE);
@@ -1680,7 +1680,7 @@ fail1:
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 sft9001_nvram_read_chunk(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
@@ -1692,7 +1692,7 @@ sft9001_nvram_read_chunk(
 	unsigned int pos;
 	size_t chunk;
 	size_t words;
-	efx_rc_t rc;
+	int rc;
 
 	while (size > 0) {
 		chunk = MIN(size, FIRMWARE_BLOCK_SIZE);
@@ -1749,18 +1749,18 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 sft9001_nvram_erase(
 	__in			efx_nic_t *enp)
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	EFX_POPULATE_WORD_1(word, EFX_BYTE_0, LOADER_CMD_ERASE_FLASH);
 	if ((rc = falcon_mdio_write(enp, epp->ep_port,
@@ -1775,12 +1775,12 @@ sft9001_nvram_erase(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 sft9001_nvram_write_chunk(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
@@ -1792,7 +1792,7 @@ sft9001_nvram_write_chunk(
 	unsigned int pos;
 	size_t chunk;
 	size_t words;
-	efx_rc_t rc;
+	int rc;
 
 	while (size > 0) {
 		chunk = MIN(size, FIRMWARE_BLOCK_SIZE);
@@ -1857,7 +1857,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1868,7 +1868,7 @@ sft9001_nvram_rw_finish(
 {
 	efx_port_t *epp = &(enp->en_port);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	/* Reboot the PHY into the main firmware */
 	if ((rc = sft9001_ssr(enp, B_FALSE)) != 0)
@@ -1891,14 +1891,14 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 }
 
 #endif	/* EFSYS_OPT_NVRAM_SFT9001 */
 
 #if EFSYS_OPT_BIST
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sft9001_bist_start(
 	__in		efx_nic_t *enp,
 	__in		efx_bist_type_t type)
@@ -1906,7 +1906,7 @@ sft9001_bist_start(
 	efx_port_t *epp = &(enp->en_port);
 	boolean_t break_link = (type == EFX_BIST_TYPE_PHY_CABLE_LONG);
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_mdio_read(enp, epp->ep_port, PMA_PMD_MMD,
 	    PMA_PMD_DIAG_CONTROL_REG, &word)) != 0)
@@ -1932,7 +1932,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -1957,7 +1957,7 @@ sft9001_bist_status(
 	}
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 sft9001_bist_poll(
 	__in			efx_nic_t *enp,
 	__in			efx_bist_type_t type,
@@ -1969,7 +1969,7 @@ sft9001_bist_poll(
 	efx_port_t *epp = &(enp->en_port);
 	uint32_t value_mask = 0;
 	efx_word_t word;
-	efx_rc_t rc;
+	int rc;
 
 	_NOTE(ARGUNUSED(type))
 
@@ -2060,7 +2060,7 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

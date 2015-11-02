@@ -188,14 +188,14 @@ hunt_phy_link_ev(
 	*link_modep = link_mode;
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 hunt_phy_power(
 	__in		efx_nic_t *enp,
 	__in		boolean_t power)
 {
 	/* TBD: consider common Siena/Hunt function: essentially identical */
 
-	efx_rc_t rc;
+	int rc;
 
 	if (!power)
 		return (0);
@@ -209,12 +209,12 @@ hunt_phy_power(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 hunt_phy_get_link(
 	__in		efx_nic_t *enp,
 	__out		hunt_link_state_t *hlsp)
@@ -228,7 +228,7 @@ hunt_phy_get_link(
 	efx_mcdi_req_t req;
 	uint8_t payload[MAX(MC_CMD_GET_LINK_IN_LEN,
 			    MC_CMD_GET_LINK_OUT_LEN)];
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_GET_LINK;
@@ -290,12 +290,12 @@ hunt_phy_get_link(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 hunt_phy_reconfigure(
 	__in		efx_nic_t *enp)
 {
@@ -313,7 +313,7 @@ hunt_phy_reconfigure(
 	uint32_t cap_mask;
 	unsigned int led_mode;
 	unsigned int speed;
-	efx_rc_t rc;
+	int rc;
 
 	if (~encp->enc_func_flags & EFX_NIC_FUNC_LINKCTRL)
 		goto out;
@@ -420,12 +420,12 @@ out:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 hunt_phy_verify(
 	__in		efx_nic_t *enp)
 {
@@ -435,7 +435,7 @@ hunt_phy_verify(
 	uint8_t payload[MAX(MC_CMD_GET_PHY_STATE_IN_LEN,
 			    MC_CMD_GET_PHY_STATE_OUT_LEN)];
 	uint32_t state;
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_GET_PHY_STATE;
@@ -471,12 +471,12 @@ fail3:
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 hunt_phy_oui_get(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *ouip)
@@ -488,11 +488,11 @@ hunt_phy_oui_get(
 
 #if EFSYS_OPT_PHY_STATS
 
-	__checkReturn				efx_rc_t
+	__checkReturn				int
 hunt_phy_stats_update(
 	__in					efx_nic_t *enp,
 	__in					efsys_mem_t *esmp,
-	__inout_ecount(EFX_PHY_NSTATS)		uint32_t *stat)
+	__out_ecount(EFX_PHY_NSTATS)		uint32_t *stat)
 {
 	/* TBD: no stats support in firmware yet */
 	_NOTE(ARGUNUSED(enp, esmp))
@@ -519,7 +519,7 @@ hunt_phy_prop_name(
 
 #endif	/* EFSYS_OPT_NAMES */
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 hunt_phy_prop_get(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
@@ -531,7 +531,7 @@ hunt_phy_prop_get(
 	return (ENOTSUP);
 }
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 hunt_phy_prop_set(
 	__in		efx_nic_t *enp,
 	__in		unsigned int id,
@@ -546,11 +546,11 @@ hunt_phy_prop_set(
 
 #if EFSYS_OPT_BIST
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 hunt_bist_enable_offline(
 	__in			efx_nic_t *enp)
 {
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = efx_mcdi_bist_enable_offline(enp)) != 0)
 		goto fail1;
@@ -558,17 +558,17 @@ hunt_bist_enable_offline(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 hunt_bist_start(
 	__in			efx_nic_t *enp,
 	__in			efx_bist_type_t type)
 {
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = efx_mcdi_bist_start(enp, type)) != 0)
 		goto fail1;
@@ -576,12 +576,12 @@ hunt_bist_start(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 hunt_bist_poll(
 	__in			efx_nic_t *enp,
 	__in			efx_bist_type_t type,
@@ -598,7 +598,7 @@ hunt_bist_poll(
 			    MCDI_CTL_SDU_LEN_MAX)];
 	uint32_t value_mask = 0;
 	uint32_t result;
-	efx_rc_t rc;
+	int rc;
 
 	(void) memset(payload, 0, sizeof (payload));
 	req.emr_cmd = MC_CMD_POLL_BIST;
@@ -679,7 +679,7 @@ hunt_bist_poll(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

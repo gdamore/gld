@@ -77,13 +77,13 @@ falcon_vpd_dimension(
 		EFX_OWORD_FIELD(oword, FRF_AB_EE_VPDW_LENGTH) != 0;
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_vpd_size(
 	__in			efx_nic_t *enp,
 	__out			size_t *sizep)
 {
 	falcon_vpd_dimension_t dim;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -98,21 +98,21 @@ falcon_vpd_size(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	*sizep = 0;
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_vpd_read(
 	__in			efx_nic_t *enp,
 	__out_bcount(size)	caddr_t data,
 	__in			size_t size)
 {
 	falcon_vpd_dimension_t dim;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -131,12 +131,12 @@ falcon_vpd_read(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_vpd_verify(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
@@ -144,7 +144,7 @@ falcon_vpd_verify(
 {
 	falcon_vpd_dimension_t dim;
 	boolean_t cksummed;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -165,12 +165,12 @@ falcon_vpd_verify(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_vpd_get(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
@@ -180,7 +180,7 @@ falcon_vpd_get(
 	falcon_vpd_dimension_t dim;
 	unsigned int offset;
 	uint8_t length;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -206,12 +206,12 @@ falcon_vpd_get(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_vpd_set(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
@@ -219,7 +219,7 @@ falcon_vpd_set(
 	__in			efx_vpd_value_t *evvp)
 {
 	falcon_vpd_dimension_t dim;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -230,12 +230,12 @@ falcon_vpd_set(
 		goto fail1;
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_vpd_next(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
@@ -245,7 +245,7 @@ falcon_vpd_next(
 {
 	falcon_vpd_dimension_t dim;
 	unsigned int offset;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -264,19 +264,19 @@ falcon_vpd_next(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_vpd_write(
 	__in			efx_nic_t *enp,
 	__in_bcount(size)	caddr_t data,
 	__in			size_t size)
 {
 	falcon_vpd_dimension_t dim;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
 
@@ -296,7 +296,7 @@ falcon_vpd_write(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

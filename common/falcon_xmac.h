@@ -50,22 +50,22 @@ extern "C" {
 
 #define	XMAC_INTR_SUPPORTED	B_TRUE
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_xmac_reset(
 	__in		efx_nic_t *enp);
 
-extern	__checkReturn	efx_rc_t
+extern	__checkReturn	int
 falcon_xmac_reconfigure(
 	__in	efx_nic_t *enp);
 
 #if EFSYS_OPT_MAC_STATS
 
-extern	__checkReturn			efx_rc_t
+extern	__checkReturn			int
 falcon_xmac_stats_update(
 	__in				efx_nic_t *enp,
  	__in				efsys_mem_t *esmp,
-	__inout_ecount(EFX_MAC_NSTATS)	efsys_stat_t *essp,
-	__inout_opt			uint32_t *generationp);
+	__out_ecount(EFX_MAC_NSTATS)	efsys_stat_t *essp,
+	__out_opt			uint32_t *generationp);
 
 #endif
 

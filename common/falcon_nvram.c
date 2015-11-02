@@ -66,14 +66,14 @@
 	(FALCON_NVRAM_INIT_HIGHEST_REG + sizeof (efx_oword_t) 	\
 	    - FALCON_NVRAM_INIT_LOWEST_REG)
 
-	__checkReturn	efx_rc_t
+	__checkReturn	int
 falcon_nvram_init(
 	__in		efx_nic_t *enp)
 {
 	falcon_spi_dev_t *fsdp;
 	efx_oword_t oword;
 	uint16_t version;
-	efx_rc_t rc;
+	int rc;
 	uint8_t cfg[FALCON_NVRAM_INIT_NEEDED_CFG_SIZE];
 	uint8_t *origin = cfg - FALCON_NVRAM_INIT_LOWEST_REG;
 
@@ -155,7 +155,7 @@ falcon_nvram_init(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	(void) memset(enp->en_u.falcon.enu_fsd, 0,
 	    sizeof (enp->en_u.falcon.enu_fsd));
@@ -182,7 +182,7 @@ typedef struct falcon_nvram_ops_s {
 #define	FALCON_GPXE_IMAGE_OFFSET	0x8000
 #define	FALCON_GPXE_IMAGE_SIZE		0x18000
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nvram_bootrom_size(
 	__in			efx_nic_t *enp,
 	__out			size_t *sizep)
@@ -194,7 +194,7 @@ falcon_nvram_bootrom_size(
 	return (0);
 }
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nvram_bootrom_get_version(
 	__in			efx_nic_t *enp,
 	__out			uint32_t *subtypep,
@@ -204,7 +204,7 @@ falcon_nvram_bootrom_get_version(
 	char buf[16], p;
 	size_t current, needle;
 	uint16_t *versionp;
-	efx_rc_t rc;
+	int rc;
 
 	version[0] = version[1] = version[2] = version[3] = 0;
 	versionp = NULL;
@@ -251,7 +251,7 @@ done:
 	return (0);
 }
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nvram_bootrom_rw_start(
 	__in			efx_nic_t *enp,
 	__out			size_t *chunk_sizep)
@@ -263,14 +263,14 @@ falcon_nvram_bootrom_rw_start(
 	return (0);
 }
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nvram_bootrom_read_chunk(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
 	__out_bcount(size)	caddr_t data,
 	__in			size_t size)
 {
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(size + offset, <=, FALCON_GPXE_IMAGE_SIZE);
 
@@ -281,16 +281,16 @@ falcon_nvram_bootrom_read_chunk(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	 __checkReturn		efx_rc_t
+static	 __checkReturn		int
 falcon_nvram_bootrom_erase(
 	__in			efx_nic_t *enp)
 {
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_spi_dev_erase(enp, FALCON_SPI_FLASH,
 	    FALCON_GPXE_IMAGE_OFFSET, FALCON_GPXE_IMAGE_SIZE)) != 0)
@@ -299,19 +299,19 @@ falcon_nvram_bootrom_erase(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nvram_bootrom_write_chunk(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
 	__out_bcount(size)	caddr_t base,
 	__in			size_t size)
 {
-	efx_rc_t rc;
+	int rc;
 
 	if ((rc = falcon_spi_dev_write(enp, FALCON_SPI_FLASH,
 	    FALCON_GPXE_IMAGE_OFFSET + offset, base, size)) != 0)
@@ -320,7 +320,7 @@ falcon_nvram_bootrom_write_chunk(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -337,14 +337,14 @@ static falcon_nvram_ops_t	__falcon_nvram_bootrom_ops = {
 
 #define	FALCON_GPXE_CFG_OFFSET		0x800
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nvram_bootrom_cfg_size(
 	__in			efx_nic_t *enp,
 	__out			size_t *sizep)
 {
 	falcon_spi_dev_t *fsdp =
 		&(enp->en_u.falcon.enu_fsd[FALCON_SPI_EEPROM]);
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(sizep != NULL);
 	EFSYS_ASSERT(fsdp != NULL);
@@ -360,12 +360,12 @@ falcon_nvram_bootrom_cfg_size(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nvram_bootrom_cfg_get_version(
 	__in			efx_nic_t *enp,
 	__out			uint32_t *subtypep,
@@ -373,7 +373,7 @@ falcon_nvram_bootrom_cfg_get_version(
 {
 	falcon_spi_dev_t *fsdp =
 		&(enp->en_u.falcon.enu_fsd[FALCON_SPI_EEPROM]);
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(fsdp != NULL);
 	if (fsdp->fsd_size < FALCON_GPXE_CFG_OFFSET) {
@@ -388,19 +388,19 @@ falcon_nvram_bootrom_cfg_get_version(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nvram_bootrom_cfg_rw_start(
 	__in			efx_nic_t *enp,
 	__out			size_t *chunk_sizep)
 {
 	falcon_spi_dev_t *fsdp =
 		&(enp->en_u.falcon.enu_fsd[FALCON_SPI_EEPROM]);
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(fsdp != NULL);
 	if (fsdp->fsd_size < FALCON_GPXE_CFG_OFFSET) {
@@ -414,13 +414,13 @@ falcon_nvram_bootrom_cfg_rw_start(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nvram_bootrom_cfg_read_chunk(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
@@ -429,7 +429,7 @@ falcon_nvram_bootrom_cfg_read_chunk(
 {
 	falcon_spi_dev_t *fsdp =
 		&(enp->en_u.falcon.enu_fsd[FALCON_SPI_EEPROM]);
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(fsdp != NULL);
 	EFSYS_ASSERT3U(fsdp->fsd_size, >=, FALCON_GPXE_CFG_OFFSET);
@@ -443,12 +443,12 @@ falcon_nvram_bootrom_cfg_read_chunk(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nvram_bootrom_cfg_write_chunk(
 	__in			efx_nic_t *enp,
 	__in			unsigned int offset,
@@ -457,7 +457,7 @@ falcon_nvram_bootrom_cfg_write_chunk(
 {
 	falcon_spi_dev_t *fsdp =
 		&(enp->en_u.falcon.enu_fsd[FALCON_SPI_EEPROM]);
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(fsdp != NULL);
 	EFSYS_ASSERT3U(fsdp->fsd_size, >=, FALCON_GPXE_CFG_OFFSET);
@@ -471,7 +471,7 @@ falcon_nvram_bootrom_cfg_write_chunk(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -516,7 +516,7 @@ static falcon_nvram_ops_t	__falcon_sft9001_ops = {
 
 #endif	/* EFSYS_OPT_NVRAM_SFT9001 */
 
-static	__checkReturn		efx_rc_t
+static	__checkReturn		int
 falcon_nvram_get_ops(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -524,7 +524,7 @@ falcon_nvram_get_ops(
 {
 	efx_nic_cfg_t *encp = &(enp->en_nic_cfg);
 	falcon_nvram_ops_t *fnvop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(type, <, EFX_NVRAM_NTYPES);
 
@@ -571,19 +571,19 @@ done:
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #if EFSYS_OPT_DIAG
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_nvram_test(
 	__in			efx_nic_t *enp)
 {
 	efx_nic_cfg_t enc;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -596,21 +596,21 @@ falcon_nvram_test(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #endif	/* EFSYS_OPT_DIAG */
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_nvram_size(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
 	__out			size_t *sizep)
 {
 	falcon_nvram_ops_t *fnvop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -626,12 +626,12 @@ falcon_nvram_size(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_nvram_get_version(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -639,7 +639,7 @@ falcon_nvram_get_version(
 	__out_ecount(4)		uint16_t version[4])
 {
 	falcon_nvram_ops_t *fnvop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -655,19 +655,19 @@ falcon_nvram_get_version(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_nvram_rw_start(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
 	__out			size_t *chunk_sizep)
 {
 	falcon_nvram_ops_t *fnvop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -683,12 +683,12 @@ falcon_nvram_rw_start(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_nvram_read_chunk(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -697,7 +697,7 @@ falcon_nvram_read_chunk(
 	__in			size_t size)
 {
 	falcon_nvram_ops_t *fnvop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -713,18 +713,18 @@ falcon_nvram_read_chunk(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_nvram_erase(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type)
 {
 	falcon_nvram_ops_t *fnvop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -742,12 +742,12 @@ falcon_nvram_erase(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_nvram_write_chunk(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -756,7 +756,7 @@ falcon_nvram_write_chunk(
 	__in			size_t size)
 {
 	falcon_nvram_ops_t *fnvop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -772,7 +772,7 @@ falcon_nvram_write_chunk(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
@@ -783,7 +783,7 @@ falcon_nvram_rw_finish(
 	__in			efx_nvram_type_t type)
 {
 	falcon_nvram_ops_t *fnvop;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_family, ==, EFX_FAMILY_FALCON);
@@ -796,7 +796,7 @@ falcon_nvram_rw_finish(
 	}
 }
 
-	__checkReturn		efx_rc_t
+	__checkReturn		int
 falcon_nvram_set_version(
 	__in			efx_nic_t *enp,
 	__in			efx_nvram_type_t type,
@@ -805,7 +805,7 @@ falcon_nvram_set_version(
 	falcon_nvram_ops_t *fnvop;
 	uint32_t subtype;
 	uint16_t old_version[4];
-	efx_rc_t rc;
+	int rc;
 
 	_NOTE(ARGUNUSED(enp))
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
@@ -830,7 +830,7 @@ falcon_nvram_set_version(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

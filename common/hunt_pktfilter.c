@@ -35,10 +35,10 @@
 
 #if EFSYS_OPT_HUNTINGTON
 
-static	__checkReturn			efx_rc_t
+static	__checkReturn			int
 hunt_pktfilter_apply(efx_nic_t *enp)
 {
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON);
 
@@ -53,12 +53,12 @@ hunt_pktfilter_apply(efx_nic_t *enp)
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 hunt_pktfilter_set(
 	__in				efx_nic_t *enp,
 	__in				boolean_t unicst,
@@ -68,7 +68,7 @@ hunt_pktfilter_set(
 	efx_mac_ops_t *emop = epp->ep_emop;
 	boolean_t old_unicst;
 	boolean_t old_brdcst;
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT3U(enp->en_magic, ==, EFX_NIC_MAGIC);
 	EFSYS_ASSERT3U(enp->en_mod_flags, &, EFX_MOD_PORT);
@@ -92,7 +92,7 @@ hunt_pktfilter_set(
 fail2:
 	EFSYS_PROBE(fail2);
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	epp->ep_all_unicst = old_unicst;
 	epp->ep_brdcst = old_brdcst;
@@ -102,13 +102,13 @@ fail1:
 
 #if EFSYS_OPT_MCAST_FILTER_LIST
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 hunt_pktfilter_mcast_set(
 	__in				efx_nic_t *enp,
 	__in_ecount(6*count)		uint8_t const *addrs,
 	__in				int count)
 {
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON);
 
@@ -123,18 +123,18 @@ hunt_pktfilter_mcast_set(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
 
 #endif /* EFSYS_OPT_MCAST_FILTER_LIST */
 
-	__checkReturn			efx_rc_t
+	__checkReturn			int
 hunt_pktfilter_mcast_all(
 	__in				efx_nic_t *enp)
 {
-	efx_rc_t rc;
+	int rc;
 
 	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON);
 
@@ -149,7 +149,7 @@ hunt_pktfilter_mcast_all(
 	return (0);
 
 fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	EFSYS_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
