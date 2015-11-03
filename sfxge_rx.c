@@ -2696,7 +2696,19 @@ sfxge_rx_start(sfxge_t *sp)
 			goto fail3;
 	}
 
+	ASSERT3U(sp->s_srp[0]->sr_state, ==, SFXGE_RXQ_STARTED);
+	/* It is sufficient to have Rx scale initialized */
+	ASSERT3U(sp->s_rx_scale.srs_state, ==, SFXGE_RX_SCALE_STARTED);
+	rc = efx_mac_filter_default_rxq_set(sp->s_enp, sp->s_srp[0]->sr_erp,
+					sp->s_rx_scale.srs_count > 1);
+	if (rc != 0)
+		goto fail4;
+
+
 	return (0);
+
+fail4:
+	DTRACE_PROBE(fail4);
 
 fail3:
 	DTRACE_PROBE(fail3);
@@ -2804,6 +2816,8 @@ sfxge_rx_stop(sfxge_t *sp)
 	int index;
 
 	ASSERT(mutex_owned(&(sp->s_state_lock)));
+
+	efx_mac_filter_default_rxq_clear(enp);
 
 	/* Stop the receive queue(s) */
 	index = sip->si_nalloc;

@@ -330,16 +330,16 @@ sfxge_start_locked(sfxge_t *sp, boolean_t restart)
 	if ((rc = sfxge_ev_start(sp)) != 0)
 		goto fail7;
 
-	if ((rc = sfxge_rx_start(sp)) != 0)
+	if ((rc = sfxge_mac_start(sp, restart)) != 0)
 		goto fail8;
 
-	if ((rc = sfxge_tx_start(sp)) != 0)
+	if ((rc = sfxge_rx_start(sp)) != 0)
 		goto fail9;
 
-	if ((rc = sfxge_mon_start(sp)) != 0)
+	if ((rc = sfxge_tx_start(sp)) != 0)
 		goto fail10;
 
-	if ((rc = sfxge_mac_start(sp, restart)) != 0)
+	if ((rc = sfxge_mon_start(sp)) != 0)
 		goto fail11;
 
 	ASSERT3U(sp->s_state, ==, SFXGE_STARTING);
@@ -353,15 +353,15 @@ done:
 
 fail11:
 	DTRACE_PROBE(fail11);
-	sfxge_mon_stop(sp);
+	sfxge_tx_stop(sp);
 
 fail10:
 	DTRACE_PROBE(fail10);
-	sfxge_tx_stop(sp);
+	sfxge_rx_stop(sp);
 
 fail9:
 	DTRACE_PROBE(fail9);
-	sfxge_rx_stop(sp);
+	sfxge_mac_stop(sp);
 
 fail8:
 	DTRACE_PROBE(fail8);
@@ -422,10 +422,10 @@ sfxge_stop_locked(sfxge_t *sp)
 	}
 	sp->s_state = SFXGE_STOPPING;
 
-	sfxge_mac_stop(sp);
 	sfxge_mon_stop(sp);
 	sfxge_tx_stop(sp);
 	sfxge_rx_stop(sp);
+	sfxge_mac_stop(sp);
 
 	/* Stop event processing - must be after rx_stop see sfxge_rx_qpoll() */
 	sfxge_ev_stop(sp);
