@@ -679,7 +679,7 @@ sfxge_intr_init(sfxge_t *sp)
 	/* Store the highest priority for convenience */
 	sip->si_intr_pri = 0;
 	for (index = 0; index < sip->si_nalloc; index++) {
-		int pri;
+		uint_t pri;
 		if ((rc = ddi_intr_get_pri(sip->si_table[index], &pri)) !=  0)
 			goto fail5;
 		if (pri > sip->si_intr_pri)
