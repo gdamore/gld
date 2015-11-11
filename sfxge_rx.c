@@ -2016,7 +2016,6 @@ sfxge_rx_qstop(sfxge_t *sp, unsigned int index)
 			/* Timeout waiting for successful flush */
 			dev_info_t *dip = sp->s_dip;
 
-				ddi_driver_name(sp->s_dip),
 			cmn_err(CE_NOTE,
 			    SFXGE_CMN_ERR "[%s%d] rxq[%d] flush timeout",
 			    ddi_driver_name(dip), ddi_get_instance(dip), index);
