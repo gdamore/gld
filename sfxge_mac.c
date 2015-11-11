@@ -702,6 +702,11 @@ sfxge_mac_link_update_locked(sfxge_t *sp, efx_link_mode_t mode)
 		smp->sm_link_duplex = SFXGE_LINK_DUPLEX_FULL;
 		break;
 
+	case EFX_LINK_40000FDX:
+		smp->sm_link_speed = 40000;
+		smp->sm_link_duplex = SFXGE_LINK_DUPLEX_FULL;
+		break;
+
 	default:
 		ASSERT(B_FALSE);
 		break;
