@@ -769,7 +769,7 @@ efx_mcdi_nvram_write(
 	    - MC_CMD_NVRAM_WRITE_IN_LEN(0);
 	EFSYS_ASSERT3U(enp->en_nic_cfg.enc_mcdi_max_payload_length, >, 0);
 	EFSYS_ASSERT3U(max_data_size, <,
-		       enp->en_nic_cfg.enc_mcdi_max_payload_length);
+		    enp->en_nic_cfg.enc_mcdi_max_payload_length);
 
 	if (size > max_data_size) {
 		rc = EINVAL;

@@ -2016,7 +2016,6 @@ sfxge_rx_qstop(sfxge_t *sp, unsigned int index)
 			/* Timeout waiting for successful flush */
 			dev_info_t *dip = sp->s_dip;
 
-				ddi_driver_name(sp->s_dip),
 			cmn_err(CE_NOTE,
 			    SFXGE_CMN_ERR "[%s%d] rxq[%d] flush timeout",
 			    ddi_driver_name(dip), ddi_get_instance(dip), index);
@@ -2552,7 +2551,6 @@ int
 sfxge_rx_init(sfxge_t *sp)
 {
 	sfxge_intr_t *sip = &(sp->s_intr);
-	const efx_nic_cfg_t *encp;
 	char name[MAXNAMELEN];
 	int index;
 	int rc;
@@ -2562,7 +2560,6 @@ sfxge_rx_init(sfxge_t *sp)
 		goto fail1;
 	}
 
-	encp = efx_nic_cfg_get(sp->s_enp);
 	if ((rc = sfxge_rx_scale_init(sp)) != 0)
 		goto fail2;
 
@@ -2696,7 +2693,18 @@ sfxge_rx_start(sfxge_t *sp)
 			goto fail3;
 	}
 
+	ASSERT3U(sp->s_srp[0]->sr_state, ==, SFXGE_RXQ_STARTED);
+	/* It is sufficient to have Rx scale initialized */
+	ASSERT3U(sp->s_rx_scale.srs_state, ==, SFXGE_RX_SCALE_STARTED);
+	rc = efx_mac_filter_default_rxq_set(sp->s_enp, sp->s_srp[0]->sr_erp,
+					    sp->s_rx_scale.srs_count > 1);
+	if (rc != 0)
+		goto fail4;
+
 	return (0);
+
+fail4:
+	DTRACE_PROBE(fail4);
 
 fail3:
 	DTRACE_PROBE(fail3);
@@ -2800,10 +2808,11 @@ sfxge_rx_stop(sfxge_t *sp)
 	sfxge_mac_t *smp = &(sp->s_mac);
 	sfxge_intr_t *sip = &(sp->s_intr);
 	efx_nic_t *enp = sp->s_enp;
-	const efx_nic_cfg_t *encp;
 	int index;
 
 	ASSERT(mutex_owned(&(sp->s_state_lock)));
+
+	efx_mac_filter_default_rxq_clear(enp);
 
 	/* Stop the receive queue(s) */
 	index = sip->si_nalloc;
@@ -2812,7 +2821,6 @@ sfxge_rx_stop(sfxge_t *sp)
 		sfxge_rx_qstop(sp, index);
 	}
 
-	encp = efx_nic_cfg_get(sp->s_enp);
 	sfxge_rx_scale_stop(sp);
 
 	mutex_enter(&(smp->sm_lock));
@@ -2855,7 +2863,6 @@ void
 sfxge_rx_fini(sfxge_t *sp)
 {
 	sfxge_intr_t *sip = &(sp->s_intr);
-	const efx_nic_cfg_t *encp;
 	int index;
 
 	ASSERT3U(sip->si_state, ==, SFXGE_INTR_INITIALIZED);
@@ -2875,6 +2882,5 @@ sfxge_rx_fini(sfxge_t *sp)
 	kmem_cache_destroy(sp->s_rpc);
 	sp->s_rpc = NULL;
 
-	encp = efx_nic_cfg_get(sp->s_enp);
 	sfxge_rx_scale_fini(sp);
 }

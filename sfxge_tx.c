@@ -2317,10 +2317,12 @@ sfxge_tx_qunblock(sfxge_txq_t *stp)
 
 	ASSERT(mutex_owned(&(sep->se_lock)));
 
-	if (stp->st_state != SFXGE_TXQ_STARTED)
-		return;
-
 	mutex_enter(&(stp->st_lock));
+
+	if (stp->st_state != SFXGE_TXQ_STARTED) {
+		mutex_exit(&(stp->st_lock));
+		return;
+	}
 
 	if (stp->st_unblock != SFXGE_TXQ_NOT_BLOCKED) {
 		unsigned int level;
@@ -2396,7 +2398,7 @@ void
 sfxge_tx_qflush_done(sfxge_txq_t *stp)
 {
 	sfxge_t *sp = stp->st_sp;
-	boolean_t flush_done = B_FALSE;
+	boolean_t flush_pending = B_FALSE;
 
 	ASSERT(mutex_owned(&(sp->s_sep[stp->st_evq]->se_lock)));
 
@@ -2404,12 +2406,12 @@ sfxge_tx_qflush_done(sfxge_txq_t *stp)
 
 	if (stp->st_flush == SFXGE_FLUSH_PENDING) {
 		stp->st_flush = SFXGE_FLUSH_DONE;
-		flush_done = B_TRUE;
+		flush_pending = B_TRUE;
 	}
 
 	mutex_exit(&(stp->st_lock));
 
-	if (flush_done == B_FALSE) {
+	if (flush_pending == B_FALSE) {
 		/* Flush was not pending */
 		return;
 	}
@@ -2430,6 +2432,7 @@ sfxge_tx_qflush(sfxge_t *sp, unsigned int index)
 	boolean_t do_flush;
 
 	ASSERT(mutex_owned(&(sp->s_state_lock)));
+	ASSERT(mutex_owned(&(sp->s_tx_flush_lock)));
 
 	mutex_enter(&(stp->st_lock));
 

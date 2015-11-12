@@ -46,6 +46,7 @@ typedef enum sfxge_prop_e {
 	SFXGE_FCNTL_GENERATE,
 	SFXGE_INTR_MODERATION,
 	SFXGE_ADV_AUTONEG,
+	SFXGE_ADV_40GFDX,
 	SFXGE_ADV_10GFDX,
 	SFXGE_ADV_1000FDX,
 	SFXGE_ADV_1000HDX,
@@ -56,6 +57,7 @@ typedef enum sfxge_prop_e {
 	SFXGE_ADV_PAUSE,
 	SFXGE_ADV_ASM_PAUSE,
 	SFXGE_LP_AUTONEG,
+	SFXGE_LP_40GFDX,
 	SFXGE_LP_10GFDX,
 	SFXGE_LP_1000FDX,
 	SFXGE_LP_1000HDX,
@@ -66,6 +68,7 @@ typedef enum sfxge_prop_e {
 	SFXGE_LP_PAUSE,
 	SFXGE_LP_ASM_PAUSE,
 	SFXGE_CAP_AUTONEG,
+	SFXGE_CAP_40GFDX,
 	SFXGE_CAP_10GFDX,
 	SFXGE_CAP_1000FDX,
 	SFXGE_CAP_1000HDX,
@@ -151,6 +154,14 @@ sfxge_gld_nd_get(sfxge_t *sp, unsigned int id, uint32_t *valp)
 			*valp = (mask & (1 << EFX_PHY_CAP_AN)) ? 1 : 0;
 			break;
 		}
+		case SFXGE_ADV_40GFDX: {
+			uint32_t mask;
+
+			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+
+			*valp = (mask & (1 << EFX_PHY_CAP_40000FDX)) ? 1 : 0;
+			break;
+		}
 		case SFXGE_ADV_10GFDX: {
 			uint32_t mask;
 
@@ -231,6 +242,14 @@ sfxge_gld_nd_get(sfxge_t *sp, unsigned int id, uint32_t *valp)
 			*valp = (mask & (1 << EFX_PHY_CAP_AN)) ? 1 : 0;
 			break;
 		}
+		case SFXGE_LP_40GFDX: {
+			uint32_t mask;
+
+			efx_phy_lp_cap_get(enp, &mask);
+
+			*valp = (mask & (1 << EFX_PHY_CAP_40000FDX)) ? 1 : 0;
+			break;
+		}
 		case SFXGE_LP_10GFDX: {
 			uint32_t mask;
 
@@ -309,6 +328,14 @@ sfxge_gld_nd_get(sfxge_t *sp, unsigned int id, uint32_t *valp)
 			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
 
 			*valp = (mask & (1 << EFX_PHY_CAP_AN)) ? 1 : 0;
+			break;
+		}
+		case SFXGE_CAP_40GFDX: {
+			uint32_t mask;
+
+			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+
+			*valp = (mask & (1 << EFX_PHY_CAP_40000FDX)) ? 1 : 0;
 			break;
 		}
 		case SFXGE_CAP_10GFDX: {
@@ -513,6 +540,21 @@ sfxge_gld_nd_set(sfxge_t *sp, unsigned int id, uint32_t val)
 				mask |= (1 << EFX_PHY_CAP_AN);
 			else
 				mask &= ~(1 << EFX_PHY_CAP_AN);
+
+			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+				goto fail1;
+
+			break;
+		}
+		case SFXGE_ADV_40GFDX: {
+			uint32_t mask;
+
+			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+
+			if (val != 0)
+				mask |= (1 << EFX_PHY_CAP_40000FDX);
+			else
+				mask &= ~(1 << EFX_PHY_CAP_40000FDX);
 
 			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
 				goto fail1;
@@ -783,6 +825,13 @@ static sfxge_ndd_param_t	sfxge_ndd_param[] = {
 	},
 	{
 		NULL,
+		SFXGE_ADV_40GFDX,
+		"adv_cap_40gfdx",
+		sfxge_gld_nd_get_ioctl,
+		sfxge_gld_nd_set_ioctl
+	},
+	{
+		NULL,
 		SFXGE_ADV_10GFDX,
 		"adv_cap_10gfdx",
 		sfxge_gld_nd_get_ioctl,
@@ -853,6 +902,13 @@ static sfxge_ndd_param_t	sfxge_ndd_param[] = {
 	},
 	{
 		NULL,
+		SFXGE_LP_40GFDX,
+		"lp_cap_40gfdx",
+		sfxge_gld_nd_get_ioctl,
+		NULL
+	},
+	{
+		NULL,
 		SFXGE_LP_10GFDX,
 		"lp_cap_10gfdx",
 		sfxge_gld_nd_get_ioctl,
@@ -918,6 +974,13 @@ static sfxge_ndd_param_t	sfxge_ndd_param[] = {
 		NULL,
 		SFXGE_CAP_AUTONEG,
 		"cap_autoneg",
+		sfxge_gld_nd_get_ioctl,
+		NULL
+	},
+	{
+		NULL,
+		SFXGE_CAP_40GFDX,
+		"cap_40gfdx",
 		sfxge_gld_nd_get_ioctl,
 		NULL
 	},

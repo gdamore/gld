@@ -191,16 +191,16 @@ sfxge_create(dev_info_t *dip, sfxge_t **spp)
 	if ((rc = sfxge_ev_init(sp)) != 0)
 		goto fail12;
 
-	if ((rc = sfxge_rx_init(sp)) != 0)
+	if ((rc = sfxge_mac_init(sp)) != 0)
 		goto fail13;
 
-	if ((rc = sfxge_tx_init(sp)) != 0)
+	if ((rc = sfxge_rx_init(sp)) != 0)
 		goto fail14;
 
-	if ((rc = sfxge_mon_init(sp)) != 0)
+	if ((rc = sfxge_tx_init(sp)) != 0)
 		goto fail15;
 
-	if ((rc = sfxge_mac_init(sp)) != 0)
+	if ((rc = sfxge_mon_init(sp)) != 0)
 		goto fail16;
 
 	mutex_init(&(sp->s_tx_flush_lock), "", MUTEX_DRIVER,
@@ -213,16 +213,16 @@ sfxge_create(dev_info_t *dip, sfxge_t **spp)
 	return (0);
 
 fail16:
-	DTRACE_PROBE(fail16);
-	sfxge_mon_fini(sp);
-
-fail15:
 	DTRACE_PROBE(fail15);
 	sfxge_tx_fini(sp);
 
-fail14:
+fail15:
 	DTRACE_PROBE(fail14);
 	sfxge_rx_fini(sp);
+
+fail14:
+	DTRACE_PROBE(fail14);
+	sfxge_mac_fini(sp);
 
 fail13:
 	DTRACE_PROBE(fail13);
@@ -330,16 +330,16 @@ sfxge_start_locked(sfxge_t *sp, boolean_t restart)
 	if ((rc = sfxge_ev_start(sp)) != 0)
 		goto fail7;
 
-	if ((rc = sfxge_rx_start(sp)) != 0)
+	if ((rc = sfxge_mac_start(sp, restart)) != 0)
 		goto fail8;
 
-	if ((rc = sfxge_tx_start(sp)) != 0)
+	if ((rc = sfxge_rx_start(sp)) != 0)
 		goto fail9;
 
-	if ((rc = sfxge_mon_start(sp)) != 0)
+	if ((rc = sfxge_tx_start(sp)) != 0)
 		goto fail10;
 
-	if ((rc = sfxge_mac_start(sp, restart)) != 0)
+	if ((rc = sfxge_mon_start(sp)) != 0)
 		goto fail11;
 
 	ASSERT3U(sp->s_state, ==, SFXGE_STARTING);
@@ -353,15 +353,15 @@ done:
 
 fail11:
 	DTRACE_PROBE(fail11);
-	sfxge_mon_stop(sp);
+	sfxge_tx_stop(sp);
 
 fail10:
 	DTRACE_PROBE(fail10);
-	sfxge_tx_stop(sp);
+	sfxge_rx_stop(sp);
 
 fail9:
 	DTRACE_PROBE(fail9);
-	sfxge_rx_stop(sp);
+	sfxge_mac_stop(sp);
 
 fail8:
 	DTRACE_PROBE(fail8);
@@ -422,10 +422,10 @@ sfxge_stop_locked(sfxge_t *sp)
 	}
 	sp->s_state = SFXGE_STOPPING;
 
-	sfxge_mac_stop(sp);
 	sfxge_mon_stop(sp);
 	sfxge_tx_stop(sp);
 	sfxge_rx_stop(sp);
+	sfxge_mac_stop(sp);
 
 	/* Stop event processing - must be after rx_stop see sfxge_rx_qpoll() */
 	sfxge_ev_stop(sp);
@@ -577,10 +577,10 @@ sfxge_destroy(sfxge_t *sp)
 	cv_destroy(&(sp->s_tx_flush_kv));
 	mutex_destroy(&(sp->s_tx_flush_lock));
 
-	sfxge_mac_fini(sp);
 	sfxge_mon_fini(sp);
 	sfxge_tx_fini(sp);
 	sfxge_rx_fini(sp);
+	sfxge_mac_fini(sp);
 	sfxge_ev_fini(sp);
 	sfxge_intr_fini(sp);
 	sfxge_sram_fini(sp);

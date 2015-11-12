@@ -356,8 +356,14 @@ sfxge_ev_rxq_flush_done(void *arg, uint32_t rxq_index)
 	if (srp == NULL)
 		goto done;
 
-	/* Resend a software event on the correct queue */
+	/* Process right now if it is the correct event queue */
 	index = srp->sr_index;
+	if (index == sep->se_index) {
+		sfxge_rx_qflush_done(srp);
+		goto done;
+	}
+
+	/* Resend a software event on the correct queue */
 	sep_targetq = sp->s_sep[index];
 
 	if (sep_targetq->se_state != SFXGE_EVQ_STARTED)
@@ -390,8 +396,14 @@ sfxge_ev_rxq_flush_failed(void *arg, uint32_t rxq_index)
 	if (srp == NULL)
 		goto done;
 
-	/* Resend a software event on the correct queue */
+	/* Process right now if it is the correct event queue */
 	index = srp->sr_index;
+	if (index == sep->se_index) {
+		sfxge_rx_qflush_failed(srp);
+		goto done;
+	}
+
+	/* Resend a software event on the correct queue */
 	sep_targetq = sp->s_sep[index];
 
 	label = rxq_index;
@@ -470,8 +482,14 @@ sfxge_ev_txq_flush_done(void *arg, uint32_t txq_index)
 
 	ASSERT3U(stp->st_state, ==, SFXGE_TXQ_INITIALIZED);
 
-	/* Resend a software event on the correct queue */
+	/* Process right now if it is the correct event queue */
 	evq = stp->st_evq;
+	if (evq == sep->se_index) {
+		sfxge_tx_qflush_done(stp);
+		goto done;
+	}
+
+	/* Resend a software event on the correct queue */
 	sep = sp->s_sep[evq];
 
 	label = stp->st_label;

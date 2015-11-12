@@ -489,7 +489,9 @@ hunt_ev_rx(
 {
 	efx_nic_t *enp = eep->ee_enp;
 	uint32_t size;
+#if 0
 	boolean_t parse_err;
+#endif
 	uint32_t label;
 	uint32_t mcast;
 	uint32_t eth_base_class;
@@ -497,7 +499,6 @@ hunt_ev_rx(
 	uint32_t l3_class;
 	uint32_t l4_class;
 	uint32_t next_read_lbits;
-	boolean_t soft1, soft2;
 	uint16_t flags;
 	boolean_t should_abort;
 	efx_evq_rxq_state_t *eersp;
@@ -536,7 +537,10 @@ hunt_ev_rx(
 		flags |= EFX_PKT_CONT;
 	}
 
+#if 0
+	/* TODO What to do if the packet is flagged with parsing error */
 	parse_err = (EFX_QWORD_FIELD(*eqp, ESF_DZ_RX_PARSE_INCOMPLETE) != 0);
+#endif
 	label = EFX_QWORD_FIELD(*eqp, ESF_DZ_RX_QLABEL);
 
 	if (EFX_QWORD_FIELD(*eqp, ESF_DZ_RX_ECRC_ERR) != 0) {
@@ -555,10 +559,6 @@ hunt_ev_rx(
 		/* ECC memory error */
 		flags |= EFX_DISCARD;
 	}
-
-	/* FIXME: do we need soft bits from RXDP firmware ? */
-	soft1 = (EFX_QWORD_FIELD(*eqp, ESF_DZ_RX_EV_SOFT1) != 0);
-	soft2 = (EFX_QWORD_FIELD(*eqp, ESF_DZ_RX_EV_SOFT2) != 0);
 
 	mcast = EFX_QWORD_FIELD(*eqp, ESF_DZ_RX_MAC_CLASS);
 	if (mcast == ESE_DZ_MAC_CLASS_UCAST)
@@ -620,7 +620,9 @@ hunt_ev_rx(
 
 	switch (l3_class) {
 	case ESE_DZ_L3_CLASS_RSVD7: /* Used by firmware for packet overrun */
+#if 0
 		parse_err = B_TRUE;
+#endif
 		flags |= EFX_DISCARD;
 		break;
 

@@ -140,7 +140,7 @@ MMAKE_INCLUDE	:=
 # Solaris 10 9/10 (U9) is required to build this driver, as earlier Solaris
 # releases do not ship with the required header files for GLDv3.
 # The driver will run on Solaris 10 10/09 (U8) and later versions.
-OS_SUPPORTED:=$(shell ggrep -Eq  'Solaris 11|s10x_u(9|10)' /etc/release && echo YES)
+OS_SUPPORTED:=$(shell ggrep -Eq  'Solaris 11|s10x_u(9|10)|OmniOS v11' /etc/release && echo YES)
 ifeq ($(OS_SUPPORTED),)
       $(error This driver needs to be built on sol10u9 or later. \
 	To build a driver to run on sol10u8 use sol10u9)
