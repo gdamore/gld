@@ -470,8 +470,14 @@ sfxge_ev_txq_flush_done(void *arg, uint32_t txq_index)
 
 	ASSERT3U(stp->st_state, ==, SFXGE_TXQ_INITIALIZED);
 
-	/* Resend a software event on the correct queue */
+	/* Process right now if it is the correct event queue */
 	evq = stp->st_evq;
+	if (evq == sep->se_index) {
+		sfxge_tx_qflush_done(stp);
+		goto done;
+	}
+
+	/* Resend a software event on the correct queue */
 	sep = sp->s_sep[evq];
 
 	label = stp->st_label;
