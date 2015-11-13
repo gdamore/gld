@@ -2317,10 +2317,12 @@ sfxge_tx_qunblock(sfxge_txq_t *stp)
 
 	ASSERT(mutex_owned(&(sep->se_lock)));
 
-	if (stp->st_state != SFXGE_TXQ_STARTED)
-		return;
-
 	mutex_enter(&(stp->st_lock));
+
+	if (stp->st_state != SFXGE_TXQ_STARTED) {
+		mutex_exit(&(stp->st_lock));
+		return;
+	}
 
 	if (stp->st_unblock != SFXGE_TXQ_NOT_BLOCKED) {
 		unsigned int level;
