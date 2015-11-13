@@ -597,16 +597,8 @@ sfxge_mac_start(sfxge_t *sp, boolean_t restart)
 			goto fail7;
 	}
 
-	ASSERT3U(sp->s_srp[0]->sr_state, ==, SFXGE_RXQ_STARTED);
-	/* It is sufficient to have Rx scale initialized */
-	ASSERT3U(sp->s_rx_scale.srs_state, ==, SFXGE_RX_SCALE_STARTED);
-	rc = efx_mac_filter_default_rxq_set(enp, sp->s_srp[0]->sr_erp,
-					    sp->s_rx_scale.srs_count > 1);
-	if (rc != 0)
-		goto fail8;
-
 	if ((rc = efx_mac_drain(enp, B_FALSE)) != 0)
-		goto fail9;
+		goto fail8;
 
 	smp->sm_state = SFXGE_MAC_STARTED;
 
@@ -623,9 +615,6 @@ sfxge_mac_start(sfxge_t *sp, boolean_t restart)
 	mutex_exit(&(smp->sm_lock));
 	return (0);
 
-fail9:
-	DTRACE_PROBE(fail9);
-	efx_mac_filter_default_rxq_clear(sp->s_enp);
 fail8:
 	DTRACE_PROBE(fail8);
 	(void) efx_mac_stats_periodic(enp, esmp, 0, B_FALSE);
@@ -1072,8 +1061,6 @@ sfxge_mac_stop(sfxge_t *sp)
 	(void) efx_mac_drain(enp, B_TRUE);
 
 	smp->sm_link_mode = EFX_LINK_UNKNOWN;
-
-	efx_mac_filter_default_rxq_clear(enp);
 
 	efx_port_fini(enp);
 
