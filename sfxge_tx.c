@@ -2396,7 +2396,7 @@ void
 sfxge_tx_qflush_done(sfxge_txq_t *stp)
 {
 	sfxge_t *sp = stp->st_sp;
-	boolean_t flush_done = B_FALSE;
+	boolean_t flush_pending = B_FALSE;
 
 	ASSERT(mutex_owned(&(sp->s_sep[stp->st_evq]->se_lock)));
 
@@ -2404,12 +2404,12 @@ sfxge_tx_qflush_done(sfxge_txq_t *stp)
 
 	if (stp->st_flush == SFXGE_FLUSH_PENDING) {
 		stp->st_flush = SFXGE_FLUSH_DONE;
-		flush_done = B_TRUE;
+		flush_pending = B_TRUE;
 	}
 
 	mutex_exit(&(stp->st_lock));
 
-	if (flush_done == B_FALSE) {
+	if (flush_pending == B_FALSE) {
 		/* Flush was not pending */
 		return;
 	}
