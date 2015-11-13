@@ -2430,6 +2430,7 @@ sfxge_tx_qflush(sfxge_t *sp, unsigned int index)
 	boolean_t do_flush;
 
 	ASSERT(mutex_owned(&(sp->s_state_lock)));
+	ASSERT(mutex_owned(&(sp->s_tx_flush_lock)));
 
 	mutex_enter(&(stp->st_lock));
 
