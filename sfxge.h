@@ -785,6 +785,9 @@ struct sfxge_s {
 	ddi_acc_handle_t		s_pci_handle;
 	uint16_t			s_pci_venid;
 	uint16_t			s_pci_devid;
+#if EFSYS_OPT_MCDI_LOGGING
+	unsigned int			s_bus_addr;
+#endif
 	efx_family_t			s_family;
 	unsigned int			s_pcie_nlanes;
 	unsigned int 			s_pcie_linkspeed;
@@ -849,6 +852,10 @@ struct sfxge_s {
 	uint16_t			s_rxq_size;
 	uint16_t			s_evq0_size;
 	uint16_t			s_evqX_size;
+#if EFSYS_OPT_MCDI_LOGGING
+	int				s_mcdi_logging;
+#endif
+
 };
 
 typedef struct sfxge_dma_buffer_attr_s {

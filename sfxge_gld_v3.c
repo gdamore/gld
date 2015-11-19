@@ -582,6 +582,15 @@ mac_prop_info_handle_t handle)
 		mac_prop_info_set_perm(handle, MAC_PROP_PERM_RW);
 		return;
 	}
+
+#if EFSYS_OPT_MCDI_LOGGING
+	if (strcmp(name, SFXGE_PRIV_PROP_NAME(mcdi_logging)) == 0) {
+		mac_prop_info_set_default_str(handle,
+		    SFXGE_XSTR(0));
+		mac_prop_info_set_perm(handle, MAC_PROP_PERM_RW);
+		return;
+	}
+#endif
 	DTRACE_PROBE(unknown_priv_prop);
 }
 
@@ -627,6 +636,13 @@ sfxge_gld_priv_prop_get(sfxge_t *sp, const char *name,
 		val = (long)us;
 		goto done;
 	}
+
+#if EFSYS_OPT_MCDI_LOGGING
+	if (strcmp(name, SFXGE_PRIV_PROP_NAME(mcdi_logging)) == 0) {
+		val = (long)sp->s_mcdi_logging;
+		goto done;
+	}
+#endif
 
 	rc = ENOTSUP;
 	goto fail2;
@@ -687,6 +703,14 @@ sfxge_gld_priv_prop_set(sfxge_t *sp, const char *name, unsigned int size,
 		goto done;
 	}
 
+#if EFSYS_OPT_MCDI_LOGGING
+	if (strcmp(name, SFXGE_PRIV_PROP_NAME(mcdi_logging)) == 0) {
+		sp->s_mcdi_logging = (int)val;
+		goto done;
+	}
+#endif
+
+
 	rc = ENOTSUP;
 	goto fail1;
 
@@ -724,6 +748,10 @@ sfxge_gld_priv_prop_rename(sfxge_t *sp)
 	}
 }
 
+#if EFSYS_OPT_MCDI_LOGGING
+#define	SFXGE_N_NAMED_PROPS	4
+#else
+#endif
 
 static void
 sfxge_gld_priv_prop_init(sfxge_t *sp)
@@ -737,8 +765,9 @@ sfxge_gld_priv_prop_init(sfxge_t *sp)
 	nprops = efx_nic_cfg_get(enp)->enc_phy_nprops;
 
 	/*
-	 * We have nprops phy properties, nnamed_props (3) named properties and
-	 * the structure must be finished by a NULL pointer.
+	 * We have nprops phy properties, nnamed_props (3 or 4)
+	 * named properties and the structure must be finished
+	 * by a NULL pointer.
 	 */
 	sp->s_mac_priv_props_alloc = nprops + nnamed_props + 1;
 	sp->s_mac_priv_props = kmem_zalloc(sizeof (sfxge_mac_priv_prop_t) *
@@ -777,12 +806,19 @@ sfxge_gld_priv_prop_init(sfxge_t *sp)
 	mac_priv_props++;
 	nprops++;
 
+#if EFSYS_OPT_MCDI_LOGGING
+	*mac_priv_props = kmem_zalloc(MAXLINKPROPNAME, KM_SLEEP);
+	(void) snprintf(*mac_priv_props, MAXLINKPROPNAME - 1,
+	    SFXGE_PRIV_PROP_NAME(mcdi_logging));
+	mac_priv_props++;
+	nprops++;
+#endif
+
 	ASSERT3U((nprops + 1), ==, sp->s_mac_priv_props_alloc);
 
 	/* Terminated by a NULL pointer */
 	*mac_priv_props = NULL;
 }
-
 
 static void
 sfxge_gld_priv_prop_fini(sfxge_t *sp)

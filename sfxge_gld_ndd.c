@@ -78,6 +78,7 @@ typedef enum sfxge_prop_e {
 	SFXGE_CAP_10HDX,
 	SFXGE_CAP_PAUSE,
 	SFXGE_CAP_ASM_PAUSE,
+	SFXGE_MCDI_LOGGING,
 	SFXGE_NPROPS
 } sfxge_prop_t;
 
@@ -410,6 +411,12 @@ sfxge_gld_nd_get(sfxge_t *sp, unsigned int id, uint32_t *valp)
 			*valp = (mask & (1 << EFX_PHY_CAP_ASYM)) ? 1 : 0;
 			break;
 		}
+#if EFSYS_OPT_MCDI_LOGGING
+		case SFXGE_MCDI_LOGGING: {
+			*valp = sp->s_mcdi_logging;
+			break;
+		}
+#endif
 		default:
 			ASSERT(B_FALSE);
 			break;
@@ -696,6 +703,12 @@ sfxge_gld_nd_set(sfxge_t *sp, unsigned int id, uint32_t val)
 
 			break;
 		}
+#if EFSYS_OPT_MCDI_LOGGING
+		case SFXGE_MCDI_LOGGING: {
+			sp->s_mcdi_logging = val;
+			break;
+		}
+#endif
 		/* Ignore other kstat writes. Might be for the link partner */
 		default:
 			DTRACE_PROBE1(ignore_kstat_write, int, id);
@@ -1046,7 +1059,16 @@ static sfxge_ndd_param_t	sfxge_ndd_param[] = {
 		"cap_asm_pause",
 		sfxge_gld_nd_get_ioctl,
 		NULL
+	},
+#if EFSYS_OPT_MCDI_LOGGING
+	{
+		NULL,
+		SFXGE_MCDI_LOGGING,
+		"mcdi_logging",
+		sfxge_gld_nd_get_ioctl,
+		sfxge_gld_nd_set_ioctl,
 	}
+#endif
 };
 
 

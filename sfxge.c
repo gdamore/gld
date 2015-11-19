@@ -153,6 +153,11 @@ sfxge_create(dev_info_t *dip, sfxge_t **spp)
 		rxq_poll_usec = SFXGE_RX_QPOLL_USEC;
 	sp->s_rxq_poll_usec = rxq_poll_usec;
 
+#if EFSYS_OPT_MCDI_LOGGING
+	sp->s_mcdi_logging = ddi_prop_get_int(DDI_DEV_T_ANY, sp->s_dip,
+	    DDI_PROP_DONTPASS, "mcdi_logging", 0);
+#endif
+
 	/* Create a taskq */
 	(void) snprintf(name, MAXNAMELEN - 1, "%s_tq", ddi_driver_name(dip));
 	sp->s_tqp = ddi_taskq_create(dip, name, 1, TASKQ_DEFAULTPRI, DDI_SLEEP);
