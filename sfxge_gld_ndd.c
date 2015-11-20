@@ -78,7 +78,9 @@ typedef enum sfxge_prop_e {
 	SFXGE_CAP_10HDX,
 	SFXGE_CAP_PAUSE,
 	SFXGE_CAP_ASM_PAUSE,
+#if EFSYS_OPT_MCDI_LOGGING
 	SFXGE_MCDI_LOGGING,
+#endif
 	SFXGE_NPROPS
 } sfxge_prop_t;
 
