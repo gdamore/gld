@@ -1994,6 +1994,7 @@ sfxge_rx_qstop(sfxge_t *sp, unsigned int index)
 
 	sfxge_rx_qpoll_stop(srp);
 
+	/* Further packets are discarded by sfxge_rx_qcomplete() */
 	srp->sr_state = SFXGE_RXQ_INITIALIZED;
 
 	if (sp->s_hw_err == SFXGE_HW_OK) {
