@@ -1989,6 +1989,7 @@ sfxge_rx_qflush_failed(sfxge_rxq_t *srp)
 static void
 sfxge_rx_qstop(sfxge_t *sp, unsigned int index)
 {
+	dev_info_t *dip = sp->s_dip;
 	sfxge_evq_t *sep = sp->s_sep[index];
 	sfxge_rxq_t *srp;
 	clock_t timeout;
@@ -2030,15 +2031,18 @@ sfxge_rx_qstop(sfxge_t *sp, unsigned int index)
 		srp->sr_flush = SFXGE_FLUSH_PENDING;
 		if (cv_timedwait(&(srp->sr_flush_kv), &(sep->se_lock),
 			timeout) < 0) {
-			/* Timeout waiting for successful flush */
-			dev_info_t *dip = sp->s_dip;
-
+			/* Timeout waiting for successful or failed flush */
 			cmn_err(CE_NOTE,
 			    SFXGE_CMN_ERR "[%s%d] rxq[%d] flush timeout",
 			    ddi_driver_name(dip), ddi_get_instance(dip), index);
 			break;
 		}
 	}
+
+	if (srp->sr_flush == SFXGE_FLUSH_FAILED)
+		cmn_err(CE_NOTE,
+		    SFXGE_CMN_ERR "[%s%d] rxq[%d] flush failed",
+		    ddi_driver_name(dip), ddi_get_instance(dip), index);
 
 	DTRACE_PROBE1(flush, sfxge_flush_state_t, srp->sr_flush);
 	srp->sr_flush = SFXGE_FLUSH_DONE;
