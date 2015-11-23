@@ -1276,6 +1276,7 @@ sfxge_rx_qstart(sfxge_t *sp, unsigned int index)
 	srp->sr_lowat = srp->sr_hiwat / 2;
 
 	srp->sr_state = SFXGE_RXQ_STARTED;
+	srp->sr_flush = SFXGE_FLUSH_INACTIVE;
 
 	sfxge_rx_qpoll_start(srp);
 
