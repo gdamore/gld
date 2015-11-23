@@ -57,6 +57,9 @@
 /* RXQ flush response timeout (in microseconds) */
 #define	SFXGE_RX_QFLUSH_USEC	(2000000)
 
+/* RXQ flush tries in the case of failure */
+#define	SFXGE_RX_QFLUSH_TRIES	(5)
+
 /* RXQ default packet buffer preallocation (number of packet buffers) */
 #define	SFXGE_RX_QPREALLOC	(0)
 
@@ -1976,7 +1979,7 @@ sfxge_rx_qflush_failed(sfxge_rxq_t *srp)
 
 	/* Flush failed, so retry until timeout in sfxge_rx_qstop() */
 	srp->sr_flush = SFXGE_FLUSH_FAILED;
-	efx_rx_qflush(srp->sr_erp);
+	cv_broadcast(&(srp->sr_flush_kv));
 }
 
 static void
@@ -1985,6 +1988,7 @@ sfxge_rx_qstop(sfxge_t *sp, unsigned int index)
 	sfxge_evq_t *sep = sp->s_sep[index];
 	sfxge_rxq_t *srp;
 	clock_t timeout;
+	unsigned int flush_tries = SFXGE_RX_QFLUSH_TRIES;
 
 	ASSERT(mutex_owned(&(sp->s_state_lock)));
 
@@ -1998,21 +2002,21 @@ sfxge_rx_qstop(sfxge_t *sp, unsigned int index)
 	/* Further packets are discarded by sfxge_rx_qcomplete() */
 	srp->sr_state = SFXGE_RXQ_INITIALIZED;
 
-	if (sp->s_hw_err == SFXGE_HW_OK) {
-		/* Wait upto 2sec for queue flushing to complete */
-		srp->sr_flush = SFXGE_FLUSH_PENDING;
-	} else {
+	if (sp->s_hw_err != SFXGE_HW_OK) {
 		/*
 		 * Flag indicates possible hardware failure.
 		 * Attempt flush but do not wait for it to complete.
 		 */
 		srp->sr_flush = SFXGE_FLUSH_DONE;
+		efx_rx_qflush(srp->sr_erp);
 	}
-	efx_rx_qflush(srp->sr_erp);
 
+	/* Wait upto 2sec for queue flushing to complete */
 	timeout = ddi_get_lbolt() + drv_usectohz(SFXGE_RX_QFLUSH_USEC);
 
-	while (srp->sr_flush != SFXGE_FLUSH_DONE) {
+	while (srp->sr_flush != SFXGE_FLUSH_DONE && flush_tries-- > 0) {
+		srp->sr_flush = SFXGE_FLUSH_PENDING;
+		efx_rx_qflush(srp->sr_erp);
 		if (cv_timedwait(&(srp->sr_flush_kv), &(sep->se_lock),
 			timeout) < 0) {
 			/* Timeout waiting for successful flush */
