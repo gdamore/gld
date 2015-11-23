@@ -1946,17 +1946,21 @@ sfxge_rx_qflush_done(sfxge_rxq_t *srp)
 	sfxge_t *sp = srp->sr_sp;
 	unsigned int index = srp->sr_index;
 	sfxge_evq_t *sep = sp->s_sep[index];
+	boolean_t flush_pending;
 
 	ASSERT(mutex_owned(&(sep->se_lock)));
 
-	/* SFCbug22989: events may be delayed. EVQs are stopped after RXQs */
-	if ((srp->sr_state != SFXGE_RXQ_INITIALIZED) ||
-	    (srp->sr_flush == SFXGE_FLUSH_DONE))
-		return;
-
-	/* Flush successful: wakeup sfxge_rx_qstop() */
+	/*
+	 * Flush successful: wakeup sfxge_rx_qstop() if flush is pending.
+	 *
+	 * A delayed flush event received after RxQ stop has timed out
+	 * will be ignored, as then the flush state will not be PENDING
+	 * (see SFCbug22989).
+	 */
+	flush_pending = (srp->sr_flush == SFXGE_FLUSH_PENDING);
 	srp->sr_flush = SFXGE_FLUSH_DONE;
-	cv_broadcast(&(srp->sr_flush_kv));
+	if (flush_pending)
+		cv_broadcast(&(srp->sr_flush_kv));
 }
 
 void
@@ -1965,21 +1969,21 @@ sfxge_rx_qflush_failed(sfxge_rxq_t *srp)
 	sfxge_t *sp = srp->sr_sp;
 	unsigned int index = srp->sr_index;
 	sfxge_evq_t *sep = sp->s_sep[index];
+	boolean_t flush_pending;
 
 	ASSERT(mutex_owned(&(sep->se_lock)));
 
-	/* SFCbug22989: events may be delayed. EVQs are stopped after RXQs */
-	if ((srp->sr_state != SFXGE_RXQ_INITIALIZED) ||
-	    (srp->sr_flush == SFXGE_FLUSH_DONE))
-		return;
-
-	/* SFCbug22989: events may be delayed. EVQs are stopped after RXQs */
-	if (srp->sr_state != SFXGE_RXQ_STARTED)
-		return;
-
-	/* Flush failed, so retry until timeout in sfxge_rx_qstop() */
+	/*
+	 * Flush failed: wakeup sfxge_rx_qstop() if flush is pending.
+	 *
+	 * A delayed flush event received after RxQ stop has timed out
+	 * will be ignored, as then the flush state will not be PENDING
+	 * (see SFCbug22989).
+	 */
+	flush_pending = (srp->sr_flush == SFXGE_FLUSH_PENDING);
 	srp->sr_flush = SFXGE_FLUSH_FAILED;
-	cv_broadcast(&(srp->sr_flush_kv));
+	if (flush_pending)
+		cv_broadcast(&(srp->sr_flush_kv));
 }
 
 static void
@@ -1989,6 +1993,7 @@ sfxge_rx_qstop(sfxge_t *sp, unsigned int index)
 	sfxge_rxq_t *srp;
 	clock_t timeout;
 	unsigned int flush_tries = SFXGE_RX_QFLUSH_TRIES;
+	int rc;
 
 	ASSERT(mutex_owned(&(sp->s_state_lock)));
 
@@ -2008,15 +2013,21 @@ sfxge_rx_qstop(sfxge_t *sp, unsigned int index)
 		 * Attempt flush but do not wait for it to complete.
 		 */
 		srp->sr_flush = SFXGE_FLUSH_DONE;
-		efx_rx_qflush(srp->sr_erp);
+		(void) efx_rx_qflush(srp->sr_erp);
 	}
 
 	/* Wait upto 2sec for queue flushing to complete */
 	timeout = ddi_get_lbolt() + drv_usectohz(SFXGE_RX_QFLUSH_USEC);
 
 	while (srp->sr_flush != SFXGE_FLUSH_DONE && flush_tries-- > 0) {
+		if ((rc = efx_rx_qflush(srp->sr_erp)) != 0) {
+			if (rc == EALREADY)
+				srp->sr_flush = SFXGE_FLUSH_DONE;
+			else
+				srp->sr_flush = SFXGE_FLUSH_FAILED;
+			break;
+		}
 		srp->sr_flush = SFXGE_FLUSH_PENDING;
-		efx_rx_qflush(srp->sr_erp);
 		if (cv_timedwait(&(srp->sr_flush_kv), &(sep->se_lock),
 			timeout) < 0) {
 			/* Timeout waiting for successful flush */
