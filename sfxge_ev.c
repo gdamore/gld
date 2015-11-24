@@ -186,11 +186,17 @@ sfxge_ev_initialized(void *arg)
 	sfxge_evq_t *sep = arg;
 
 	ASSERT(mutex_owned(&(sep->se_lock)));
+
+	/* Init done events may be duplicated on 7xxx (see SFCbug31631) */
+	if (sep->se_state == SFXGE_EVQ_STARTED)
+		goto done;
+
 	ASSERT3U(sep->se_state, ==, SFXGE_EVQ_STARTING);
 	sep->se_state = SFXGE_EVQ_STARTED;
 
 	cv_broadcast(&(sep->se_init_kv));
 
+done:
 	return (B_FALSE);
 }
 
