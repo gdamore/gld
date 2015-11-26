@@ -1219,22 +1219,28 @@ sfxge_rx_qinit(sfxge_t *sp, unsigned int index)
 
 	ASSERT3U(index, <, SFXGE_RX_SCALE_MAX);
 
-	srp = kmem_cache_alloc(sp->s_rqc, KM_SLEEP);
-
+	if ((srp = kmem_cache_alloc(sp->s_rqc, KM_SLEEP)) == NULL) {
+		rc = ENOMEM;
+		goto fail1;
+	}
 	ASSERT3U(srp->sr_state, ==, SFXGE_RXQ_UNINITIALIZED);
 
 	srp->sr_index = index;
 	sp->s_srp[index] = srp;
 
 	if ((rc = sfxge_rx_kstat_init(srp)) != 0)
-		goto fail1;
+		goto fail2;
 
 	srp->sr_state = SFXGE_RXQ_INITIALIZED;
 
 	return (0);
+
+fail2:
+	DTRACE_PROBE(fail2);
+	kmem_cache_free(sp->s_rqc, srp);
+
 fail1:
 	DTRACE_PROBE1(fail1, int, rc);
-	kmem_cache_free(sp->s_rqc, srp);
 
 	return (rc);
 }

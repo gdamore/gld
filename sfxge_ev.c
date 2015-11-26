@@ -747,6 +747,10 @@ sfxge_ev_qinit(sfxge_t *sp, unsigned int index, unsigned int ev_batch)
 	ASSERT3U(index, <, SFXGE_RX_SCALE_MAX);
 
 	sep = kmem_cache_alloc(index ? sp->s_eqXc : sp->s_eq0c, KM_SLEEP);
+	if (sep == NULL) {
+		rc = ENOMEM;
+		goto fail1;
+	}
 	ASSERT3U(sep->se_state, ==, SFXGE_EVQ_UNINITIALIZED);
 
 	sep->se_index = index;
@@ -758,7 +762,7 @@ sfxge_ev_qinit(sfxge_t *sp, unsigned int index, unsigned int ev_batch)
 
 	/* Initialize the statistics */
 	if ((rc = sfxge_ev_kstat_init(sep)) != 0)
-		goto fail1;
+		goto fail2;
 
 	sep->se_state = SFXGE_EVQ_INITIALIZED;
 	sep->se_ev_batch = ev_batch;
@@ -766,8 +770,8 @@ sfxge_ev_qinit(sfxge_t *sp, unsigned int index, unsigned int ev_batch)
 
 	return (0);
 
-fail1:
-	DTRACE_PROBE1(fail1, int, rc);
+fail2:
+	DTRACE_PROBE(fail2);
 
 	sep->se_index = 0;
 
@@ -775,6 +779,9 @@ fail1:
 	mutex_destroy(&(sep->se_lock));
 
 	kmem_cache_free(index ? sp->s_eqXc : sp->s_eq0c, sep);
+
+fail1:
+	DTRACE_PROBE1(fail1, int, rc);
 
 	return (rc);
 }

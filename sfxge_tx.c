@@ -1097,10 +1097,13 @@ sfxge_tx_qinit(sfxge_t *sp, unsigned int index, sfxge_txq_type_t type,
 	ASSERT3U(type, <, SFXGE_TXQ_NTYPES);
 	ASSERT3U(evq, <, EFX_ARRAY_SIZE(sp->s_sep));
 
-	stp = kmem_cache_alloc(sp->s_tqc, KM_SLEEP);
-	stdp = &(stp->st_dpl);
-
+	if ((stp = kmem_cache_alloc(sp->s_tqc, KM_SLEEP)) == NULL) {
+		rc = ENOMEM;
+		goto fail1;
+	}
 	ASSERT3U(stp->st_state, ==, SFXGE_TXQ_UNINITIALIZED);
+
+	stdp = &(stp->st_dpl);
 
 	stp->st_index = index;
 	stp->st_type = type;
@@ -1111,7 +1114,7 @@ sfxge_tx_qinit(sfxge_t *sp, unsigned int index, sfxge_txq_type_t type,
 
 	/* Initialize the statistics */
 	if ((rc = sfxge_tx_kstat_init(stp)) != 0)
-		goto fail1;
+		goto fail2;
 
 	stdp->get_pkt_limit = ddi_prop_get_int(DDI_DEV_T_ANY, sp->s_dip,
 	    DDI_PROP_DONTPASS, "tx_dpl_get_pkt_limit",
@@ -1139,8 +1142,6 @@ fail2:
 
 	sfxge_tx_kstat_fini(stp);
 
-fail1:
-	DTRACE_PROBE1(fail1, int, rc);
 
 	stp->st_evq = 0;
 	stp->st_type = 0;
@@ -1149,6 +1150,9 @@ fail1:
 	mutex_destroy(&(stp->st_lock));
 
 	kmem_cache_free(sp->s_tqc, stp);
+
+fail1:
+	DTRACE_PROBE1(fail1, int, rc);
 
 	return (rc);
 }
