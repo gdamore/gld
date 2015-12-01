@@ -2498,6 +2498,10 @@ sfxge_tx_qstop(sfxge_t *sp, unsigned int index)
 
 	mutex_enter(&(sep->se_lock));
 	mutex_enter(&(stp->st_lock));
+
+	if (stp->st_state == SFXGE_TXQ_INITIALIZED)
+		goto done;
+
 	ASSERT(stp->st_state == SFXGE_TXQ_FLUSH_PENDING ||
 	    stp->st_state == SFXGE_TXQ_FLUSH_DONE ||
 	    stp->st_state == SFXGE_TXQ_FLUSH_FAILED);
@@ -2550,6 +2554,7 @@ sfxge_tx_qstop(sfxge_t *sp, unsigned int index)
 
 	stp->st_state = SFXGE_TXQ_INITIALIZED;
 
+done:
 	mutex_exit(&(stp->st_lock));
 	mutex_exit(&(sep->se_lock));
 }
@@ -2723,14 +2728,7 @@ sfxge_tx_start(sfxge_t *sp)
 fail2:
 	DTRACE_PROBE(fail2);
 
-	index = EFX_ARRAY_SIZE(sp->s_stp);
-	while (--index >= 0) {
-		if (sp->s_stp[index] != NULL)
-			sfxge_tx_qstop(sp, index);
-	}
-
-	/* Tear down the transmit module */
-	efx_tx_fini(enp);
+	sfxge_tx_stop(sp);
 
 fail1:
 	DTRACE_PROBE1(fail1, int, rc);
