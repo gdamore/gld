@@ -590,7 +590,10 @@ typedef struct sfxge_tx_dpl_s {
 typedef enum sfxge_txq_state_e {
 	SFXGE_TXQ_UNINITIALIZED = 0,
 	SFXGE_TXQ_INITIALIZED,
-	SFXGE_TXQ_STARTED
+	SFXGE_TXQ_STARTED,
+	SFXGE_TXQ_FLUSH_PENDING,
+	SFXGE_TXQ_FLUSH_DONE,
+	SFXGE_TXQ_FLUSH_FAILED
 } sfxge_txq_state_t;
 
 typedef enum sfxge_txq_type_e {
@@ -654,7 +657,6 @@ struct sfxge_txq_s {
 			sfxge_txq_t			*__st_next;
 			unsigned int			__st_pending;
 			unsigned int			__st_completed;
-			volatile sfxge_flush_state_t	__st_flush;
 
 		} __st_s4;
 		uint8_t	__st_pad[SFXGE_CPU_CACHE_SIZE];
@@ -691,7 +693,6 @@ struct sfxge_txq_s {
 #define	st_next		__st_u4.__st_s4.__st_next
 #define	st_pending	__st_u4.__st_s4.__st_pending
 #define	st_completed	__st_u4.__st_s4.__st_completed
-#define	st_flush	__st_u4.__st_s4.__st_flush
 
 typedef enum sfxge_rx_scale_state_e {
 	SFXGE_RX_SCALE_UNINITIALIZED = 0,

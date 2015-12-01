@@ -2408,10 +2408,38 @@ sfxge_tx_qflush_done(sfxge_txq_t *stp)
 
 	mutex_enter(&(stp->st_lock));
 
-	if (stp->st_flush == SFXGE_FLUSH_PENDING)
-		flush_pending = B_TRUE;
+	switch (stp->st_state) {
+	case SFXGE_TXQ_INITIALIZED:
+		/* Ignore flush event after TxQ destroyed */
+		break;
 
-	stp->st_flush = SFXGE_FLUSH_DONE;
+	case SFXGE_TXQ_FLUSH_PENDING:
+		flush_pending = B_TRUE;
+		stp->st_state = SFXGE_TXQ_FLUSH_DONE;
+		break;
+
+	case SFXGE_TXQ_FLUSH_FAILED:
+		/* MC may have rebooted before handling the flush request */
+		stp->st_state = SFXGE_TXQ_FLUSH_DONE;
+		break;
+
+	case SFXGE_TXQ_STARTED:
+		/*
+		 * MC initiated flush on MC reboot or because of bad Tx
+		 * descriptor
+		 */
+		stp->st_state = SFXGE_TXQ_FLUSH_DONE;
+		break;
+
+	case SFXGE_TXQ_FLUSH_DONE:
+		/* Ignore unexpected extra flush event */
+		ASSERT(B_FALSE);
+		break;
+
+	default:
+		ASSERT(B_FALSE);
+	}
+
 
 	mutex_exit(&(stp->st_lock));
 
@@ -2442,25 +2470,20 @@ sfxge_tx_qflush(sfxge_t *sp, unsigned int index, boolean_t wait_for_flush)
 
 	/* Prepare to flush and stop the queue */
 	if (stp->st_state == SFXGE_TXQ_STARTED) {
-		stp->st_state = SFXGE_TXQ_INITIALIZED;
-
 		/* Flush the transmit queue */
 		if ((rc = efx_tx_qflush(stp->st_etp)) == EALREADY) {
 			/* Already flushed, may be initiated by MC */
-			stp->st_flush = SFXGE_FLUSH_DONE;
+			stp->st_state = SFXGE_TXQ_FLUSH_DONE;
 		} else if (rc != 0) {
 			/* Unexpected error */
-			stp->st_flush = SFXGE_FLUSH_FAILED;
+			stp->st_state = SFXGE_TXQ_FLUSH_FAILED;
 		} else if (wait_for_flush) {
-			stp->st_flush = SFXGE_FLUSH_PENDING;
+			stp->st_state = SFXGE_TXQ_FLUSH_PENDING;
 			sp->s_tx_flush_pending++;
 		} else {
 			/* Assume the flush is done */
-			stp->st_flush = SFXGE_FLUSH_DONE;
+			stp->st_state = SFXGE_TXQ_FLUSH_DONE;
 		}
-	} else {
-		/* No hardware ring, so don't flush */
-		stp->st_flush = SFXGE_FLUSH_INACTIVE;
 	}
 
 	mutex_exit(&(stp->st_lock));
@@ -2475,7 +2498,9 @@ sfxge_tx_qstop(sfxge_t *sp, unsigned int index)
 
 	mutex_enter(&(sep->se_lock));
 	mutex_enter(&(stp->st_lock));
-	ASSERT3U(stp->st_state, ==, SFXGE_TXQ_INITIALIZED);
+	ASSERT(stp->st_state == SFXGE_TXQ_FLUSH_PENDING ||
+	    stp->st_state == SFXGE_TXQ_FLUSH_DONE ||
+	    stp->st_state == SFXGE_TXQ_FLUSH_FAILED);
 
 	/* All queues should have been flushed */
 	if (stp->st_sp->s_tx_flush_pending != 0) {
@@ -2484,15 +2509,12 @@ sfxge_tx_qstop(sfxge_t *sp, unsigned int index)
 		    ddi_driver_name(sp->s_dip), ddi_get_instance(sp->s_dip),
 		    index, stp->st_sp->s_tx_flush_pending);
 	}
-	if (stp->st_flush == SFXGE_FLUSH_FAILED) {
+	if (stp->st_state == SFXGE_TXQ_FLUSH_FAILED) {
 		cmn_err(CE_NOTE,
 		    SFXGE_CMN_ERR "[%s%d] txq[%d] flush failed.",
 		    ddi_driver_name(sp->s_dip), ddi_get_instance(sp->s_dip),
 		    index);
 	}
-
-	/* in case of TX flush timeout */
-	stp->st_flush = SFXGE_FLUSH_DONE;
 
 	/* Destroy the transmit queue */
 	efx_tx_qdestroy(stp->st_etp);
@@ -2525,6 +2547,8 @@ sfxge_tx_qstop(sfxge_t *sp, unsigned int index)
 	stp->st_pending = 0;
 	stp->st_completed = 0;
 	stp->st_reaped = 0;
+
+	stp->st_state = SFXGE_TXQ_INITIALIZED;
 
 	mutex_exit(&(stp->st_lock));
 	mutex_exit(&(sep->se_lock));
