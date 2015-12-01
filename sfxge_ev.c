@@ -486,8 +486,6 @@ sfxge_ev_txq_flush_done(void *arg, uint32_t txq_index)
 	if (stp == NULL)
 		goto done;
 
-	ASSERT3U(stp->st_state, ==, SFXGE_TXQ_INITIALIZED);
-
 	/* Process right now if it is the correct event queue */
 	evq = stp->st_evq;
 	if (evq == sep->se_index) {

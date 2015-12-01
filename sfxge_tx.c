@@ -2408,10 +2408,10 @@ sfxge_tx_qflush_done(sfxge_txq_t *stp)
 
 	mutex_enter(&(stp->st_lock));
 
-	if (stp->st_flush == SFXGE_FLUSH_PENDING) {
-		stp->st_flush = SFXGE_FLUSH_DONE;
+	if (stp->st_flush == SFXGE_FLUSH_PENDING)
 		flush_pending = B_TRUE;
-	}
+
+	stp->st_flush = SFXGE_FLUSH_DONE;
 
 	mutex_exit(&(stp->st_lock));
 
@@ -2430,10 +2430,10 @@ sfxge_tx_qflush_done(sfxge_txq_t *stp)
 }
 
 static void
-sfxge_tx_qflush(sfxge_t *sp, unsigned int index)
+sfxge_tx_qflush(sfxge_t *sp, unsigned int index, boolean_t wait_for_flush)
 {
 	sfxge_txq_t *stp = sp->s_stp[index];
-	boolean_t do_flush;
+	int rc;
 
 	ASSERT(mutex_owned(&(sp->s_state_lock)));
 	ASSERT(mutex_owned(&(sp->s_tx_flush_lock)));
@@ -2443,19 +2443,27 @@ sfxge_tx_qflush(sfxge_t *sp, unsigned int index)
 	/* Prepare to flush and stop the queue */
 	if (stp->st_state == SFXGE_TXQ_STARTED) {
 		stp->st_state = SFXGE_TXQ_INITIALIZED;
-		stp->st_flush = SFXGE_FLUSH_PENDING;
-		do_flush = B_TRUE;
+
+		/* Flush the transmit queue */
+		if ((rc = efx_tx_qflush(stp->st_etp)) == EALREADY) {
+			/* Already flushed, may be initiated by MC */
+			stp->st_flush = SFXGE_FLUSH_DONE;
+		} else if (rc != 0) {
+			/* Unexpected error */
+			stp->st_flush = SFXGE_FLUSH_FAILED;
+		} else if (wait_for_flush) {
+			stp->st_flush = SFXGE_FLUSH_PENDING;
+			sp->s_tx_flush_pending++;
+		} else {
+			/* Assume the flush is done */
+			stp->st_flush = SFXGE_FLUSH_DONE;
+		}
 	} else {
 		/* No hardware ring, so don't flush */
 		stp->st_flush = SFXGE_FLUSH_INACTIVE;
-		do_flush = B_FALSE;
 	}
 
 	mutex_exit(&(stp->st_lock));
-
-	/* Flush the transmit queue */
-	if (do_flush)
-		efx_tx_qflush(stp->st_etp);
 }
 
 static void
@@ -3105,7 +3113,6 @@ sfxge_tx_stop(sfxge_t *sp)
 	mutex_enter(&(sp->s_tx_flush_lock));
 
 	/* Flush all the queues */
-	sp->s_tx_flush_pending = sp->s_tx_qcount;
 	if (sp->s_hw_err == SFXGE_HW_OK) {
 		wait_for_flush = B_TRUE;
 	} else {
@@ -3120,7 +3127,7 @@ sfxge_tx_stop(sfxge_t *sp)
 	index = EFX_ARRAY_SIZE(sp->s_stp);
 	while (--index >= 0) {
 		if (sp->s_stp[index] != NULL)
-			sfxge_tx_qflush(sp, index);
+			sfxge_tx_qflush(sp, index, wait_for_flush);
 	}
 
 	if (wait_for_flush == B_FALSE)
