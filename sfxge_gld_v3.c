@@ -167,6 +167,11 @@ sfxge_gld_getstat(void *arg, unsigned int id, uint64_t *valp)
 		break;
 	}
 
+#ifdef ETHER_STAT_CAP_40GFDX
+	case ETHER_STAT_CAP_40GFDX:
+		*valp = sfxge_phy_dfl_cap_test64(sp, EFX_PHY_CAP_40000FDX);
+		break;
+#endif
 #ifdef ETHER_STAT_CAP_10GFDX
 	case ETHER_STAT_CAP_10GFDX:
 		*valp = sfxge_phy_dfl_cap_test64(sp, EFX_PHY_CAP_10000FDX);
@@ -200,6 +205,11 @@ sfxge_gld_getstat(void *arg, unsigned int id, uint64_t *valp)
 		*valp = sfxge_phy_dfl_cap_test64(sp, EFX_PHY_CAP_AN);
 		break;
 
+#ifdef ETHER_STAT_ADV_CAP_40GFDX
+	case ETHER_STAT_ADV_CAP_40GFDX:
+		*valp = sfxge_phy_cur_cap_test64(sp, EFX_PHY_CAP_40000FDX);
+		break;
+#endif
 #ifdef ETHER_STAT_ADV_CAP_10GFDX
 	case ETHER_STAT_ADV_CAP_10GFDX:
 		*valp = sfxge_phy_cur_cap_test64(sp, EFX_PHY_CAP_10000FDX);
@@ -233,6 +243,11 @@ sfxge_gld_getstat(void *arg, unsigned int id, uint64_t *valp)
 		*valp = sfxge_phy_cur_cap_test64(sp, EFX_PHY_CAP_AN);
 		break;
 
+#ifdef ETHER_STAT_LP_CAP_40GFDX
+	case ETHER_STAT_LP_CAP_40GFDX:
+		*valp = sfxge_phy_lp_cap_test64(sp, EFX_PHY_CAP_40000FDX);
+		break;
+#endif
 #ifdef ETHER_STAT_LP_CAP_10GFDX
 	case ETHER_STAT_LP_CAP_10GFDX:
 		*valp = sfxge_phy_lp_cap_test64(sp, EFX_PHY_CAP_10000FDX);
@@ -882,6 +897,10 @@ sfxge_gld_getprop(void *arg, const char *name, mac_prop_id_t id,
 		break;
 	case MAC_PROP_EN_AUTONEG:
 	case MAC_PROP_AUTONEG:
+#ifdef MAC_PROP_EN_40GFDX_CAP
+	case MAC_PROP_EN_40GFDX_CAP:
+	case MAC_PROP_ADV_40GFDX_CAP:
+#endif
 	case MAC_PROP_EN_10GFDX_CAP:
 	case MAC_PROP_ADV_10GFDX_CAP:
 	case MAC_PROP_EN_1000FDX_CAP:
@@ -961,6 +980,12 @@ sfxge_gld_getprop(void *arg, const char *name, mac_prop_id_t id,
 	case MAC_PROP_AUTONEG:
 		*v8 = sfxge_phy_cap_test(sp, flag, EFX_PHY_CAP_AN, NULL);
 		break;
+#ifdef MAC_PROP_EN_40GFDX_CPA
+	case MAC_PROP_EN_40GFDX_CAP:
+	case MAC_PROP_ADV_40GFDX_CAP:
+		*v8 = sfxge_phy_cap_test(sp, flag, EFX_PHY_CAP_40000FDX, NULL);
+		break;
+#endif
 	case MAC_PROP_EN_10GFDX_CAP:
 	case MAC_PROP_ADV_10GFDX_CAP:
 		*v8 = sfxge_phy_cap_test(sp, flag, EFX_PHY_CAP_10000FDX, NULL);
@@ -1070,6 +1095,9 @@ sfxge_gld_setprop(void *arg, const char *name, mac_prop_id_t id,
 	 */
 	case MAC_PROP_AUTONEG:
 	case MAC_PROP_EN_AUTONEG:
+#ifdef MAC_PROP_EN_40GFDX_CAP
+	case MAC_PROP_EN_40GFDX_CAP:
+#endif
 	case MAC_PROP_EN_10GFDX_CAP:
 	case MAC_PROP_EN_1000FDX_CAP:
 	case MAC_PROP_EN_1000HDX_CAP:
@@ -1115,6 +1143,12 @@ sfxge_gld_setprop(void *arg, const char *name, mac_prop_id_t id,
 		if ((rc = sfxge_phy_cap_set(sp, EFX_PHY_CAP_AN, v8)) != 0)
 			goto fail2;
 		break;
+#ifdef MAC_PROP_EN_40GFDX_CAP
+	case MAC_PROP_EN_40GFDX_CAP:
+		if ((rc = sfxge_phy_cap_set(sp, EFX_PHY_CAP_40000FDX, v8)) != 0)
+			goto fail2;
+		break;
+#endif
 	case MAC_PROP_EN_10GFDX_CAP: {
 		if ((rc = sfxge_phy_cap_set(sp, EFX_PHY_CAP_10000FDX, v8)) != 0)
 			goto fail2;
