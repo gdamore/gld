@@ -175,7 +175,7 @@ $(error "Please set GLDV=3_sol10|3_sol11")
 endif
 endif
 
-MMAKE_INCLUDE	+= -I../../../../src/include -I/usr/include -include "compat.h"
+MMAKE_INCLUDE	+= -I/usr/include -include "compat.h"
 
 all:	$(TARGET)
 

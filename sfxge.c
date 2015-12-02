@@ -41,9 +41,8 @@
 #include <sys/cpuvar.h>
 #include <sys/pghw.h>
 
-#include <ci/internal/version.h>
-
 #include "sfxge.h"
+#include "sfxge_version.h"
 #include "efsys.h"
 #include "efx.h"
 
@@ -62,8 +61,9 @@ static void	*sfxge_ss;
 
 /*
  * By default modinfo will display lines truncated to 80 characters and so just
- * show 32 characters of our sfxge_ident string. At the moment CI_VERSION_STRING
- * is 12 characters. To show the whole string use modinfo -w
+ * show 32 characters of our sfxge_ident string. At the moment
+ * SFXGE_VERSION_STRING is 12 characters. To show the whole string use
+ * modinfo -w
  */
 #if defined(_USE_GLD_V3_SOL10) && !defined(_USE_GLD_V3_SOL11)
 #ifdef DEBUG
@@ -72,27 +72,27 @@ static void	*sfxge_ss;
  * default. See previous comment.
  */
 const char sfxge_ident[] =
-    CI_VERSION_STRING" for Sol10 (u8 and later) (DEBUG)";
+    SFXGE_VERSION_STRING" for Sol10 (u8 and later) (DEBUG)";
 #else
 const char sfxge_ident[] =
-    CI_VERSION_STRING" for Sol10 (u8 and later)";
+    SFXGE_VERSION_STRING" for Sol10 (u8 and later)";
 #endif
 #elif defined(_USE_GLD_V3_SOL11)
 #ifdef DEBUG
-const char sfxge_ident[] = CI_VERSION_STRING" for Sol11 (DEBUG)";
+const char sfxge_ident[] = SFXGE_VERSION_STRING" for Sol11 (DEBUG)";
 #else
-const char sfxge_ident[] = CI_VERSION_STRING" for Sol11";
+const char sfxge_ident[] = SFXGE_VERSION_STRING" for Sol11";
 #endif
 #elif defined(_USE_GLD_V3)
 #ifdef DEBUG
-const char sfxge_ident[] = CI_VERSION_STRING" GLDv3 (DEBUG)";
+const char sfxge_ident[] = SFXGE_VERSION_STRING" GLDv3 (DEBUG)";
 #else
-const char sfxge_ident[] = CI_VERSION_STRING" GLDv3";
+const char sfxge_ident[] = SFXGE_VERSION_STRING" GLDv3";
 #endif
 #else
 #error "sfxge_ident undefined"
 #endif
-const char sfxge_version[] = CI_VERSION_STRING;
+const char sfxge_version[] = SFXGE_VERSION_STRING;
 
 static void
 sfxge_cfg_build(sfxge_t *sp)
