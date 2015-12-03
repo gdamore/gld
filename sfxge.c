@@ -61,9 +61,8 @@ static void	*sfxge_ss;
 
 /*
  * By default modinfo will display lines truncated to 80 characters and so just
- * show 32 characters of our sfxge_ident string. At the moment
- * SFXGE_VERSION_STRING is 12 characters. To show the whole string use
- * modinfo -w
+ * show 32 characters of our sfxge_ident string. Currently SFXGE_VERSION_STRING
+ * is 12 characters. To show the whole string use 'modinfo -w'.
  */
 #if defined(_USE_GLD_V3_SOL10) && !defined(_USE_GLD_V3_SOL11)
 #ifdef DEBUG
