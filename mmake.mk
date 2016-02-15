@@ -8,6 +8,7 @@ TARGET		:= 	sfxge
 
 SFXGE_SRCS	:= 	sfxge_err.c \
 			sfxge_ev.c \
+			sfxge_hash.c \
 			sfxge_intr.c \
 			sfxge_mac.c \
 			sfxge_gld_ndd.c \
@@ -52,26 +53,6 @@ COMMON_SRCS	:= 	efx_bootcfg.c \
 			efx_tx.c \
 			efx_vpd.c \
 			efx_wol.c \
-			falcon_gmac.c \
-			falcon_i2c.c \
-			falcon_mac.c \
-			falcon_mdio.c \
-			falcon_nic.c \
-			falcon_nvram.c \
-			falcon_spi.c \
-			falcon_sram.c \
-			falcon_vpd.c \
-			falcon_xmac.c \
-			lm87.c \
-			max6647.c \
-			nullmon.c \
-			nullphy.c \
-			qt2022c2.c \
-			qt2025c.c \
-			sft9001.c \
-			sfx7101.c \
-			txc43128.c \
-			xphy.c \
 			siena_mac.c \
 			siena_mcdi.c \
 			mcdi_mon.c \
@@ -80,18 +61,19 @@ COMMON_SRCS	:= 	efx_bootcfg.c \
 			siena_phy.c \
 			siena_sram.c \
 			siena_vpd.c \
-			hunt_ev.c \
-			hunt_filter.c \
-			hunt_intr.c \
-			hunt_mac.c \
-			hunt_mcdi.c \
+			ef10_ev.c \
+			ef10_filter.c \
+			ef10_intr.c \
+			ef10_mac.c \
+			ef10_mcdi.c \
+			ef10_nic.c \
 			hunt_nic.c \
-			hunt_nvram.c \
+			ef10_nvram.c \
+			ef10_phy.c \
 			hunt_phy.c \
-			hunt_rx.c \
-			hunt_sram.c \
-			hunt_tx.c \
-			hunt_vpd.c
+			ef10_rx.c \
+			ef10_tx.c \
+			ef10_vpd.c
 COMMON_OBJS	:=	$(COMMON_SRCS:%.c=%.o)
 
 COMMON_HDRS	:= 	efx.h \
@@ -103,31 +85,9 @@ COMMON_HDRS	:= 	efx.h \
 			efx_regs_mcdi.h \
 			efx_regs_pci.h \
 			efx_types.h \
-			falcon_gmac.h \
-			falcon_impl.h \
-			falcon_nvram.h \
-			falcon_stats.h \
-			falcon_xmac.h \
-			lm87.h \
-			lm87_impl.h \
-			max6647.h \
-			max6647_impl.h \
-			nullmon.h \
-			nullphy.h \
-			nullphy_impl.h \
-			qt2022c2.h \
-			qt2022c2_impl.h \
-			qt2025c.h \
-			qt2025c_impl.h \
-			sft9001.h \
-			sft9001_impl.h \
-			sfx7101.h \
-			sfx7101_impl.h \
-			txc43128.h \
-			txc43128_impl.h \
-			xphy.h \
 			siena_flash.h \
 			siena_impl.h \
+			ef10_impl.h \
 			hunt_impl.h \
 			efx_phy_ids.h \
 			mcdi_mon.h
@@ -146,6 +106,17 @@ ifeq ($(OS_SUPPORTED),)
 	To build a driver to run on sol10u8 use sol10u9)
 endif
 
+
+ifeq ($(GLDV),3_omnios)
+DEPEND		:= -N misc/mac -N drv/ip
+MMAKE_CFLAGS    += -D_USE_GLD_V3
+MMAKE_CFLAGS    += -D_USE_GLD_V3_SOL10
+MMAKE_CFLAGS    += -D_USE_GLD_V3_SOL11
+MMAKE_CFLAGS	+= -D_USE_MAC_PRIV_PROP
+MMAKE_CFLAGS    += -D_USE_GLD_V3_PROPS
+MMAKE_CFLAGS    += -U_USE_MTU_UPDATE
+MMAKE_CFLAGS    += -D_USE_NDD_PROPS
+else
 ifeq ($(GLDV),3_sol11)
 DEPEND		:= -N misc/mac -N drv/ip
 MMAKE_CFLAGS    += -D_USE_GLD_V3
@@ -171,7 +142,8 @@ MMAKE_CFLAGS    += -D_USE_NDD_PROPS
 export CTFCONVERT_PERMISSIVE=1
 else
 
-$(error "Please set GLDV=3_sol10|3_sol11")
+$(error "Please set GLDV=3_sol10|3_sol11|3_omnios")
+endif
 endif
 endif
 

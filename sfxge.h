@@ -778,6 +778,8 @@ typedef enum sfxge_action_on_hw_err_e {
 
 typedef char *sfxge_mac_priv_prop_t;
 
+#define	SFXGE_TOEPLITZ_KEY_LEN 40
+
 struct sfxge_s {
 	kmutex_t			s_state_lock;
 	sfxge_state_t			s_state;
@@ -856,7 +858,7 @@ struct sfxge_s {
 #if EFSYS_OPT_MCDI_LOGGING
 	int				s_mcdi_logging;
 #endif
-
+	const uint32_t			*s_toeplitz_cache;
 };
 
 typedef struct sfxge_dma_buffer_attr_s {
@@ -894,9 +896,6 @@ extern int			sfxge_gld_unregister(sfxge_t *);
 
 extern int			sfxge_gld_nd_register(sfxge_t *);
 extern void			sfxge_gld_nd_unregister(sfxge_t *);
-#ifdef _USE_MAC_PRIV_PROP
-extern void			sfxge_gld_priv_prop_rename(sfxge_t *);
-#endif
 
 extern int			sfxge_dma_buffer_create(efsys_mem_t *,
     const sfxge_dma_buffer_attr_t *);
@@ -981,12 +980,6 @@ extern uint8_t			sfxge_phy_cap_test(sfxge_t *sp, uint32_t flags,
     uint32_t field, boolean_t *mutablep);
 extern int			sfxge_phy_cap_set(sfxge_t *sp, uint32_t field,
     int set);
-#ifdef _USE_MAC_PRIV_PROP
-extern int			sfxge_phy_prop_get(sfxge_t *sp, unsigned int id,
-    uint32_t flags, uint32_t *valp);
-extern int			sfxge_phy_prop_set(sfxge_t *sp, unsigned int id,
-    uint32_t val);
-#endif
 
 extern int			sfxge_rx_init(sfxge_t *);
 extern int			sfxge_rx_start(sfxge_t *);
@@ -1037,46 +1030,24 @@ extern sfxge_packet_type_t	sfxge_pkthdr_parse(mblk_t *,
     struct ether_header **, struct ip **, struct tcphdr **, size_t *, size_t *,
     uint16_t *, uint16_t *);
 
+extern int sfxge_toeplitz_hash_init(sfxge_t *);
+extern void sfxge_toeplitz_hash_fini(sfxge_t *);
+extern uint32_t sfxge_toeplitz_hash(sfxge_t *, unsigned int,
+    uint8_t *, uint16_t, uint8_t *, uint16_t);
+
 /*
  * 4-tuple hash for TCP/IPv4 used for LRO, TSO and TX queue selection.
- * To compute the same hash value as Falcon/Siena hardware, the inputs
+ * To compute the same hash value as Siena/Huntington hardware, the inputs
  * must be in big endian (network) byte order.
  */
-#define	SFXGE_TCP_HASH(_raddr, _rport, _laddr, _lport, _hash)		\
-	do {								\
-		uint32_t raddr = (uint32_t)BSWAP_32(_raddr);		\
-		uint32_t rport = (uint32_t)BSWAP_16(_rport);		\
-		uint32_t laddr = (uint32_t)BSWAP_32(_laddr);		\
-		uint32_t lport = (uint32_t)BSWAP_16(_lport);		\
-		uint32_t key;						\
-		uint32_t lfsr;						\
-		unsigned int index;					\
-									\
-		key = laddr ^						\
-		    ((lport << 16) | (raddr >> 16)) ^			\
-		    ((raddr << 16) | rport);				\
-									\
-		lfsr = 0xffffffff;					\
-		for (index = 0; index < 32; index++) {			\
-			uint32_t input;					\
-			uint32_t key_bit32;				\
-			uint32_t lfsr_bit16;				\
-			uint32_t lfsr_bit3;				\
-									\
-			key_bit32 = key >> 31;				\
-			key <<= 1;					\
-									\
-			lfsr_bit16 = (lfsr >> 15) & 1;			\
-			lfsr_bit3 = (lfsr >> 2) & 1;			\
-									\
-			input = (lfsr_bit16 ^ lfsr_bit3) ^ key_bit32;	\
-			ASSERT((input & ~1) == 0);			\
-									\
-			lfsr = (lfsr << 1) | input;			\
-		}							\
-									\
-		(_hash) = (uint16_t)lfsr;				\
-	_NOTE(CONSTANTCONDITION)					\
+#define	SFXGE_TCP_HASH(_sp, _raddr, _rport, _laddr, _lport, _hash)	\
+	do { \
+		(_hash) = sfxge_toeplitz_hash(_sp, \
+					sizeof (struct in_addr), \
+					(uint8_t *)(_raddr), \
+					(_rport), \
+					(uint8_t *)(_laddr), \
+					(_lport)); \
 	} while (B_FALSE)
 
 /*
@@ -1084,8 +1055,8 @@ extern sfxge_packet_type_t	sfxge_pkthdr_parse(mblk_t *,
  * For UDP or SCTP packets, calculate a 4-tuple hash using port numbers.
  * For other IPv4 non-TCP packets, use zero for the port numbers.
  */
-#define	SFXGE_IP_HASH(_raddr, _rport, _laddr, _lport, _hash)		\
-	SFXGE_TCP_HASH((_raddr), (_rport), (_laddr), (_lport), (_hash))
+#define	SFXGE_IP_HASH(_sp, _raddr, _rport, _laddr, _lport, _hash)	\
+	SFXGE_TCP_HASH((_sp), (_raddr), (_rport), (_laddr), (_lport), (_hash))
 
 
 extern int		sfxge_nvram_ioctl(sfxge_t *, sfxge_nvram_ioc_t *);

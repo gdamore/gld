@@ -602,10 +602,6 @@ sfxge_mac_start(sfxge_t *sp, boolean_t restart)
 
 	smp->sm_state = SFXGE_MAC_STARTED;
 
-#ifdef _USE_MAC_PRIV_PROP
-	sfxge_gld_priv_prop_rename(sp);
-#endif
-
 	/*
 	 * Start link state polling. For hardware that reports link change
 	 * events we still poll once to update the initial link state.

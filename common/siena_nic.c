@@ -28,7 +28,6 @@
  * policies, either expressed or implied, of the FreeBSD Project.
  */
 
-#include "efsys.h"
 #include "efx.h"
 #include "efx_impl.h"
 #include "mcdi_mon.h"
@@ -75,28 +74,6 @@ fail1:
 
 	return (rc);
 }
-
-#if EFSYS_OPT_PCIE_TUNE
-
-	__checkReturn	efx_rc_t
-siena_nic_pcie_extended_sync(
-	__in		efx_nic_t *enp)
-{
-	efx_rc_t rc;
-
-	if ((rc = efx_mcdi_set_workaround(enp, MC_CMD_WORKAROUND_BUG17230,
-		    B_TRUE, NULL) != 0))
-		goto fail1;
-
-	return (0);
-
-fail1:
-	EFSYS_PROBE1(fail1, efx_rc_t, rc);
-
-	return (rc);
-}
-
-#endif	/* EFSYS_OPT_PCIE_TUNE */
 
 static	__checkReturn	efx_rc_t
 siena_board_cfg(
@@ -167,6 +144,7 @@ siena_board_cfg(
 
 	encp->enc_hw_tx_insert_vlan_enabled = B_FALSE;
 	encp->enc_fw_assisted_tso_enabled = B_FALSE;
+	encp->enc_fw_assisted_tso_v2_enabled = B_FALSE;
 	encp->enc_allow_set_mac_with_installed_filters = B_TRUE;
 
 	return (0);

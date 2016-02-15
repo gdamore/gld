@@ -31,6 +31,12 @@
 #ifndef	_SYS_SFXGE_VERSION_H
 #define	_SYS_SFXGE_VERSION_H
 
-#define	SFXGE_VERSION_STRING	"v4.7.0.1014"
+/*
+ * Driver version.
+ * It is populated in the driver cfg class kstat and used to build
+ * the module link info (visible in modinfo -w output).
+ * It is updated by mmaketag script when a new v5 tag is created.
+ */
+#define	SFXGE_VERSION_STRING	"v4.8.0.1027"
 
 #endif	/* _SYS_SFXGE_VERSION_H */

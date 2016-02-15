@@ -71,30 +71,6 @@ static ddi_dma_attr_t sfxge_phy_dma_attr = {
 };
 
 
-/* The common code requires the loader *without* the REFLASH_HEADER */
-#if EFSYS_OPT_FALCON && EFSYS_OPT_NVRAM_SFT9001
-static const uint8_t SFT9001_FULL_LOADER[] = {
-#include "firmware/image.h"
-#include "firmware/SFT9001A_LOADER.c"
-};
-const uint8_t * const sft9001_loader = SFT9001_FULL_LOADER +
-    sizeof (image_header_t);
-const size_t sft9001_loader_size = sizeof (SFT9001_FULL_LOADER) -
-    sizeof (image_header_t);
-#endif
-
-#if EFSYS_OPT_FALCON && EFSYS_OPT_NVRAM_SFX7101
-static const uint8_t SFX7101_FULL_LOADER[] = {
-#include "firmware/image.h"
-#include "firmware/SFX7101B_LOADER.c"
-};
-const uint8_t * const sfx7101_loader = SFX7101_FULL_LOADER +
-    sizeof (image_header_t);
-const size_t sfx7101_loader_size = sizeof (SFX7101_FULL_LOADER) -
-    sizeof (image_header_t);
-#endif
-
-
 static int
 sfxge_phy_kstat_update(kstat_t *ksp, int rw)
 {
@@ -571,48 +547,6 @@ sfxge_phy_cap_set(sfxge_t *sp, uint32_t field, int set)
 		cap &= ~(1 << field);
 
 	rc = efx_phy_adv_cap_set(enp, cap);
-done:
-	mutex_exit(&(smp->sm_lock));
-
-	return (rc);
-}
-
-
-int
-sfxge_phy_prop_get(sfxge_t *sp, unsigned int id, uint32_t flags, uint32_t *valp)
-{
-	sfxge_mac_t *smp = &(sp->s_mac);
-	efx_nic_t *enp = sp->s_enp;
-	int rc = 0;
-
-	mutex_enter(&(smp->sm_lock));
-
-	if (smp->sm_state != SFXGE_MAC_STARTED)
-		goto done;
-
-	rc = efx_phy_prop_get(enp, id, flags, valp);
-
-done:
-	mutex_exit(&(smp->sm_lock));
-
-	return (rc);
-}
-
-
-int
-sfxge_phy_prop_set(sfxge_t *sp, unsigned int id, uint32_t val)
-{
-	sfxge_mac_t *smp = &(sp->s_mac);
-	efx_nic_t *enp = sp->s_enp;
-	int rc = 0;
-
-	mutex_enter(&(smp->sm_lock));
-
-	if (smp->sm_state != SFXGE_MAC_STARTED)
-		goto done;
-
-	rc = efx_phy_prop_set(enp, id, val);
-
 done:
 	mutex_exit(&(smp->sm_lock));
 
