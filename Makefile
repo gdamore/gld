@@ -8,6 +8,7 @@ TARGET		:= 	sfxge
 
 SFXGE_SRCS	:= 	sfxge_err.c \
 			sfxge_ev.c \
+			sfxge_hash.c \
 			sfxge_intr.c \
 			sfxge_mac.c \
 			sfxge_gld_ndd.c \
@@ -52,46 +53,27 @@ COMMON_SRCS	:= 	efx_bootcfg.c \
 			efx_tx.c \
 			efx_vpd.c \
 			efx_wol.c \
-			falcon_gmac.c \
-			falcon_i2c.c \
-			falcon_mac.c \
-			falcon_mdio.c \
-			falcon_nic.c \
-			falcon_nvram.c \
-			falcon_spi.c \
-			falcon_sram.c \
-			falcon_vpd.c \
-			falcon_xmac.c \
-			lm87.c \
-			max6647.c \
-			nullmon.c \
-			nullphy.c \
-			qt2022c2.c \
-			qt2025c.c \
-			sft9001.c \
-			sfx7101.c \
-			txc43128.c \
-			xphy.c \
+			mcdi_mon.c \
 			siena_mac.c \
 			siena_mcdi.c \
-			mcdi_mon.c \
 			siena_nic.c \
 			siena_nvram.c \
 			siena_phy.c \
 			siena_sram.c \
 			siena_vpd.c \
-			hunt_ev.c \
-			hunt_filter.c \
-			hunt_intr.c \
-			hunt_mac.c \
-			hunt_mcdi.c \
+			ef10_ev.c \
+			ef10_filter.c \
+			ef10_intr.c \
+			ef10_mac.c \
+			ef10_mcdi.c \
+			ef10_nic.c \
+			ef10_nvram.c \
+			ef10_phy.c \
+			ef10_rx.c \
+			ef10_tx.c \
+			ef10_vpd.c \
 			hunt_nic.c \
-			hunt_nvram.c \
 			hunt_phy.c \
-			hunt_rx.c \
-			hunt_sram.c \
-			hunt_tx.c \
-			hunt_vpd.c
 COMMON_OBJS	:=	$(COMMON_SRCS:%.c=%.o)
 
 COMMON_HDRS	:= 	efx.h \
@@ -103,32 +85,10 @@ COMMON_HDRS	:= 	efx.h \
 			efx_regs_mcdi.h \
 			efx_regs_pci.h \
 			efx_types.h \
-			falcon_gmac.h \
-			falcon_impl.h \
-			falcon_nvram.h \
-			falcon_stats.h \
-			falcon_xmac.h \
-			lm87.h \
-			lm87_impl.h \
-			max6647.h \
-			max6647_impl.h \
-			nullmon.h \
-			nullphy.h \
-			nullphy_impl.h \
-			qt2022c2.h \
-			qt2022c2_impl.h \
-			qt2025c.h \
-			qt2025c_impl.h \
-			sft9001.h \
-			sft9001_impl.h \
-			sfx7101.h \
-			sfx7101_impl.h \
-			txc43128.h \
-			txc43128_impl.h \
-			xphy.h \
 			siena_flash.h \
 			siena_impl.h \
 			hunt_impl.h \
+			ef10_impl.h \
 			efx_phy_ids.h \
 			mcdi_mon.h
 
@@ -142,7 +102,7 @@ CPPFLAGS	+= -D_USE_GLD_V3_PROPS
 CPPFLAGS	+= -U_USE_MTU_UPDATE
 CPPFLAGS	+= -D_USE_NDD_PROPS
 
-CC=/opt/gcc/4.4.4/bin/gcc
+CC=/opt/gcc-4.4.4/bin/gcc
 #CFLAGS += -m64 -xmodel=kernel -xstrconst -xdebugformat=stabs -v
 CFLAGS += -ffreestanding -mcmodel=kernel -mno-red-zone
 CFLAGS += -m64 -finline -nodefaultlibs -fno-builtin -mno-mmx -mno-sse -msave-args -Wall
