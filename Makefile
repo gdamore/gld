@@ -73,8 +73,9 @@ COMMON_SRCS	:= 	efx_bootcfg.c \
 			ef10_tx.c \
 			ef10_vpd.c \
 			hunt_nic.c \
-			hunt_phy.c \
-COMMON_OBJS	:=	$(COMMON_SRCS:%.c=%.o)
+			hunt_phy.c
+
+COMMON_OBJS	:=	$(COMMON_SRCS:.c=.o)
 
 COMMON_HDRS	:= 	efx.h \
 			efx_impl.h \
