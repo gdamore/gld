@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Solarflare Communications Inc.
+ * Copyright (c) 2015 Solarflare Communications Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,15 +30,70 @@
 
 #include "efx.h"
 #include "efx_impl.h"
-#if EFSYS_OPT_MON_MCDI
-#include "mcdi_mon.h"
-#endif
 
-#if EFSYS_OPT_HUNTINGTON
 
+#if EFSYS_OPT_MEDFORD
+
+static	__checkReturn	efx_rc_t
+efx_mcdi_get_rxdp_config(
+	__in		efx_nic_t *enp,
+	__out		uint32_t *end_paddingp)
+{
+	efx_mcdi_req_t req;
+	uint8_t payload[MAX(MC_CMD_GET_RXDP_CONFIG_IN_LEN,
+			    MC_CMD_GET_RXDP_CONFIG_OUT_LEN)];
+	uint32_t end_padding;
+	efx_rc_t rc;
+
+	memset(payload, 0, sizeof (payload));
+	req.emr_cmd = MC_CMD_GET_RXDP_CONFIG;
+	req.emr_in_buf = payload;
+	req.emr_in_length = MC_CMD_GET_RXDP_CONFIG_IN_LEN;
+	req.emr_out_buf = payload;
+	req.emr_out_length = MC_CMD_GET_RXDP_CONFIG_OUT_LEN;
+
+	efx_mcdi_execute(enp, &req);
+	if (req.emr_rc != 0) {
+		rc = req.emr_rc;
+		goto fail1;
+	}
+
+	if (MCDI_OUT_DWORD_FIELD(req, GET_RXDP_CONFIG_OUT_DATA,
+				    GET_RXDP_CONFIG_OUT_PAD_HOST_DMA) == 0) {
+		/* RX DMA end padding is disabled */
+		end_padding = 0;
+	} else {
+		switch(MCDI_OUT_DWORD_FIELD(req, GET_RXDP_CONFIG_OUT_DATA,
+					    GET_RXDP_CONFIG_OUT_PAD_HOST_LEN)) {
+		case MC_CMD_SET_RXDP_CONFIG_IN_PAD_HOST_64:
+			end_padding = 64;
+			break;
+		case MC_CMD_SET_RXDP_CONFIG_IN_PAD_HOST_128:
+			end_padding = 128;
+			break;
+		case MC_CMD_SET_RXDP_CONFIG_IN_PAD_HOST_256:
+			end_padding = 256;
+			break;
+		default:
+			rc = ENOTSUP;
+			goto fail2;
+		}
+	}
+
+	*end_paddingp = end_padding;
+
+	return (0);
+
+fail2:
+	EFSYS_PROBE(fail2);
+fail1:
+	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+
+	return (rc);
+}
 
 	__checkReturn	efx_rc_t
-hunt_board_cfg(
+medford_board_cfg(
 	__in		efx_nic_t *enp)
 {
 	efx_mcdi_iface_t *emip = &(enp->en_mcdi.em_emip);
@@ -51,10 +106,15 @@ hunt_board_cfg(
 	uint32_t pf;
 	uint32_t vf;
 	uint32_t mask;
-	uint32_t flags;
 	uint32_t sysclk;
 	uint32_t base, nvec;
+	uint32_t end_padding;
 	efx_rc_t rc;
+
+	/*
+	 * FIXME: Likely to be incomplete and incorrect.
+	 * Parts of this should be shared with Huntington.
+	 */
 
 	if ((rc = efx_mcdi_get_port_assignment(enp, &port)) != 0)
 		goto fail1;
@@ -112,7 +172,7 @@ hunt_board_cfg(
 	}
 
 	encp->enc_board_type = board_type;
-	encp->enc_clk_mult = 1; /* not used for Huntington */
+	encp->enc_clk_mult = 1; /* not used for Medford */
 
 	/* Fill out fields in enp->en_port and enp->en_nic_cfg from MCDI */
 	if ((rc = efx_mcdi_get_phy_cfg(enp)) != 0)
@@ -124,117 +184,40 @@ hunt_board_cfg(
 	epp->ep_default_adv_cap_mask = els.els_adv_cap_mask;
 	epp->ep_adv_cap_mask = els.els_adv_cap_mask;
 
-	/*
-	 * Enable firmware workarounds for hardware errata.
-	 * Expected responses are:
-	 *  - 0 (zero):
-	 *	Success: workaround enabled or disabled as requested.
-	 *  - MC_CMD_ERR_ENOSYS (reported as ENOTSUP):
-	 *	Firmware does not support the MC_CMD_WORKAROUND request.
-	 *	(assume that the workaround is not supported).
-	 *  - MC_CMD_ERR_ENOENT (reported as ENOENT):
-	 *	Firmware does not support the requested workaround.
-	 *  - MC_CMD_ERR_EPERM  (reported as EACCES):
-	 *	Unprivileged function cannot enable/disable workarounds.
-	 *
-	 * See efx_mcdi_request_errcode() for MCDI error translations.
-	 */
-
-	/*
-	 * If the bug35388 workaround is enabled, then use an indirect access
-	 * method to avoid unsafe EVQ writes.
-	 */
-	rc = efx_mcdi_set_workaround(enp, MC_CMD_WORKAROUND_BUG35388, B_TRUE,
-	    NULL);
-	if ((rc == 0) || (rc == EACCES))
-		encp->enc_bug35388_workaround = B_TRUE;
-	else if ((rc == ENOTSUP) || (rc == ENOENT))
-		encp->enc_bug35388_workaround = B_FALSE;
-	else
-		goto fail8;
-
-	/*
-	 * If the bug41750 workaround is enabled, then do not test interrupts,
-	 * as the test will fail (seen with Greenport controllers).
-	 */
-	rc = efx_mcdi_set_workaround(enp, MC_CMD_WORKAROUND_BUG41750, B_TRUE,
-	    NULL);
-	if (rc == 0) {
-		encp->enc_bug41750_workaround = B_TRUE;
-	} else if (rc == EACCES) {
-		/* Assume a controller with 40G ports needs the workaround. */
-		if (epp->ep_default_adv_cap_mask & EFX_PHY_CAP_40000FDX)
-			encp->enc_bug41750_workaround = B_TRUE;
-		else
-			encp->enc_bug41750_workaround = B_FALSE;
-	} else if ((rc == ENOTSUP) || (rc == ENOENT)) {
-		encp->enc_bug41750_workaround = B_FALSE;
-	} else {
-		goto fail9;
-	}
 	if (EFX_PCI_FUNCTION_IS_VF(encp)) {
-		/* Interrupt testing does not work for VFs. See bug50084. */
+		/*
+		 * Interrupt testing does not work for VFs. See bug50084.
+		 * FIXME: Does this still  apply to Medford?
+		 */
 		encp->enc_bug41750_workaround = B_TRUE;
 	}
 
-	/*
-	 * If the bug26807 workaround is enabled, then firmware has enabled
-	 * support for chained multicast filters. Firmware will reset (FLR)
-	 * functions which have filters in the hardware filter table when the
-	 * workaround is enabled/disabled.
-	 *
-	 * We must recheck if the workaround is enabled after inserting the
-	 * first hardware filter, in case it has been changed since this check.
-	 */
-	rc = efx_mcdi_set_workaround(enp, MC_CMD_WORKAROUND_BUG26807,
-	    B_TRUE, &flags);
-	if (rc == 0) {
-		encp->enc_bug26807_workaround = B_TRUE;
-		if (flags & (1 << MC_CMD_WORKAROUND_EXT_OUT_FLR_DONE_LBN)) {
-			/*
-			 * Other functions had installed filters before the
-			 * workaround was enabled, and they have been reset
-			 * by firmware.
-			 */
-			EFSYS_PROBE(bug26807_workaround_flr_done);
-			/* FIXME: bump MC warm boot count ? */
-		}
-	} else if (rc == EACCES) {
-		/*
-		 * Unprivileged functions cannot enable the workaround in older
-		 * firmware.
-		 */
-		encp->enc_bug26807_workaround = B_FALSE;
-	} else if ((rc == ENOTSUP) || (rc == ENOENT)) {
-		encp->enc_bug26807_workaround = B_FALSE;
-	} else {
-		goto fail10;
-	}
+	/* Chained multicast is always enabled on Medford */
+	encp->enc_bug26807_workaround = B_TRUE;
 
 	/* Get sysclk frequency (in MHz). */
 	if ((rc = efx_mcdi_get_clock(enp, &sysclk)) != 0)
-		goto fail11;
+		goto fail8;
 
 	/*
 	 * The timer quantum is 1536 sysclk cycles, documented for the
 	 * EV_TMR_VAL field of EV_TIMER_TBL. Scale for MHz and ns units.
 	 */
 	encp->enc_evq_timer_quantum_ns = 1536000UL / sysclk; /* 1536 cycles */
-	if (encp->enc_bug35388_workaround) {
-		encp->enc_evq_timer_max_us = (encp->enc_evq_timer_quantum_ns <<
-		ERF_DD_EVQ_IND_TIMER_VAL_WIDTH) / 1000;
-	} else {
-		encp->enc_evq_timer_max_us = (encp->enc_evq_timer_quantum_ns <<
-		FRF_CZ_TC_TIMER_VAL_WIDTH) / 1000;
-	}
+	encp->enc_evq_timer_max_us = (encp->enc_evq_timer_quantum_ns <<
+		    FRF_CZ_TC_TIMER_VAL_WIDTH) / 1000;
 
 	/* Check capabilities of running datapath firmware */
 	if ((rc = ef10_get_datapath_caps(enp)) != 0)
-	    goto fail12;
+	    goto fail9;
 
 	/* Alignment for receive packet DMA buffers */
 	encp->enc_rx_buf_align_start = 1;
-	encp->enc_rx_buf_align_end = 64; /* RX DMA end padding */
+
+	/* Get the RX DMA end padding alignment configuration */
+	if ((rc = efx_mcdi_get_rxdp_config(enp, &end_padding)) != 0)
+		goto fail10;
+	encp->enc_rx_buf_align_end = end_padding;
 
 	/* Alignment for WPTR updates */
 	encp->enc_rx_push_align = EF10_RX_WPTR_ALIGN;
@@ -251,9 +234,9 @@ hunt_board_cfg(
 
 	encp->enc_buftbl_limit = 0xFFFFFFFF;
 
-	encp->enc_piobuf_limit = HUNT_PIOBUF_NBUFS;
-	encp->enc_piobuf_size = HUNT_PIOBUF_SIZE;
-	encp->enc_piobuf_min_alloc_size = HUNT_MIN_PIO_ALLOC_SIZE;
+	encp->enc_piobuf_limit = MEDFORD_PIOBUF_NBUFS;
+	encp->enc_piobuf_size = MEDFORD_PIOBUF_SIZE;
+	encp->enc_piobuf_min_alloc_size = MEDFORD_MIN_PIO_ALLOC_SIZE;
 
 	/*
 	 * Get the current privilege mask. Note that this may be modified
@@ -262,13 +245,13 @@ hunt_board_cfg(
 	 * can result in time-of-check/time-of-use bugs.
 	 */
 	if ((rc = ef10_get_privilege_mask(enp, &mask)) != 0)
-		goto fail13;
+		goto fail11;
 	encp->enc_privilege_mask = mask;
 
 	/* Get interrupt vector limits */
 	if ((rc = efx_mcdi_get_vector_cfg(enp, &base, &nvec, NULL)) != 0) {
 		if (EFX_PCI_FUNCTION_IS_PF(encp))
-			goto fail14;
+			goto fail12;
 
 		/* Ignore error (cannot query vector limits from a VF). */
 		base = 0;
@@ -283,12 +266,14 @@ hunt_board_cfg(
 	 */
 	encp->enc_tx_tso_tcp_header_offset_limit = EF10_TCP_HEADER_OFFSET_LIMIT;
 
+	/*
+	 * Medford stores a single global copy of VPD, not per-PF as on
+	 * Huntington.
+	 */
+	encp->enc_vpd_is_global = B_TRUE;
+
 	return (0);
 
-fail14:
-	EFSYS_PROBE(fail14);
-fail13:
-	EFSYS_PROBE(fail13);
 fail12:
 	EFSYS_PROBE(fail12);
 fail11:
@@ -317,5 +302,4 @@ fail1:
 	return (rc);
 }
 
-
-#endif	/* EFSYS_OPT_HUNTINGTON */
+#endif	/* EFSYS_OPT_MEDFORD */

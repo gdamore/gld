@@ -28,7 +28,6 @@
  * policies, either expressed or implied, of the FreeBSD Project.
  */
 
-#include "efsys.h"
 #include "efx.h"
 #include "efx_impl.h"
 
@@ -195,7 +194,7 @@ siena_mac_loopback_set(
 	__in		efx_loopback_type_t loopback_type)
 {
 	efx_port_t *epp = &(enp->en_port);
-	efx_phy_ops_t *epop = epp->ep_epop;
+	const efx_phy_ops_t *epop = epp->ep_epop;
 	efx_loopback_type_t old_loopback_type;
 	efx_link_mode_t old_loopback_link_mode;
 	efx_rc_t rc;

@@ -76,6 +76,8 @@ extern "C" {
 #define	__out_ecount_opt(_n)
 #define	__out_bcount(_n)
 #define	__out_bcount_opt(_n)
+#define	__out_bcount_part(_n, _l)
+#define	__out_bcount_part_opt(_n, _l)
 
 #define	__deref_out
 
@@ -99,9 +101,9 @@ extern "C" {
 
 #define	EFSYS_OPT_NAMES 1
 
-#define	EFSYS_OPT_FALCON 1
 #define	EFSYS_OPT_SIENA 1
 #define	EFSYS_OPT_HUNTINGTON 1
+#define	EFSYS_OPT_MEDFORD 0
 #if DEBUG
 #define	EFSYS_OPT_CHECK_REG 1
 #else
@@ -110,38 +112,23 @@ extern "C" {
 
 #define	EFSYS_OPT_MCDI 1
 #define	EFSYS_OPT_MCDI_LOGGING 0
+#define	EFSYS_OPT_MCDI_PROXY_AUTH 0
 
-#define	EFSYS_OPT_MAC_FALCON_GMAC 1
-#define	EFSYS_OPT_MAC_FALCON_XMAC 1
 #define	EFSYS_OPT_MAC_STATS 1
 
 #define	EFSYS_OPT_LOOPBACK 1
 
-#define	EFSYS_OPT_MON_NULL 1
-#define	EFSYS_OPT_MON_LM87 1
-#define	EFSYS_OPT_MON_MAX6647 1
 #define	EFSYS_OPT_MON_MCDI 1
 #define	EFSYS_OPT_MON_STATS 1
 
-#define	EFSYS_OPT_PHY_NULL 1
-#define	EFSYS_OPT_PHY_QT2022C2 1
-#define	EFSYS_OPT_PHY_SFX7101 1
-#define	EFSYS_OPT_PHY_TXC43128 1
-#define	EFSYS_OPT_PHY_SFT9001 1
-#define	EFSYS_OPT_PHY_QT2025C 1
 #define	EFSYS_OPT_PHY_STATS 1
-#define	EFSYS_OPT_PHY_PROPS 1
 #define	EFSYS_OPT_BIST 1
 #define	EFSYS_OPT_PHY_LED_CONTROL 1
 
 #define	EFSYS_OPT_VPD 1
 #define	EFSYS_OPT_NVRAM 1
-#define	EFSYS_OPT_NVRAM_FALCON_BOOTROM 1
-#define	EFSYS_OPT_NVRAM_SFT9001	0
-#define	EFSYS_OPT_NVRAM_SFX7101	0
 #define	EFSYS_OPT_BOOTCFG 1
 
-#define	EFSYS_OPT_PCIE_TUNE 1
 #define	EFSYS_OPT_DIAG 1
 #define	EFSYS_OPT_WOL 1
 #define	EFSYS_OPT_RX_SCALE 1
@@ -152,6 +139,8 @@ extern "C" {
 #define	EFSYS_OPT_DECODE_INTR_FATAL 1
 
 #define	EFSYS_OPT_FILTER 1
+
+#define	EFSYS_OPT_LICENSING 0
 
 /* ID */
 
@@ -602,20 +591,6 @@ typedef kmutex_t	efsys_lock_t;
 		if ((_state) != EFSYS_LOCK_MAGIC)			\
 			ASSERT(B_FALSE);				\
 		mutex_exit(_lockp);					\
-	_NOTE(CONSTANTCONDITION)					\
-	} while (B_FALSE)
-
-/* PREEMPT */
-
-#define	EFSYS_PREEMPT_DISABLE(_state)					\
-	do {								\
-		(_state) = ddi_enter_critical();			\
-	_NOTE(CONSTANTCONDITION)					\
-	} while (B_FALSE)
-
-#define	EFSYS_PREEMPT_ENABLE(_state)					\
-	do {								\
-		ddi_exit_critical(_state);				\
 	_NOTE(CONSTANTCONDITION)					\
 	} while (B_FALSE)
 

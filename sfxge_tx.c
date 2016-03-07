@@ -1192,11 +1192,11 @@ sfxge_tx_qstart(sfxge_t *sp, unsigned int index)
 		break;
 
 	case SFXGE_TXQ_IP_CKSUM:
-		flags = EFX_CKSUM_IPV4;
+		flags = EFX_TXQ_CKSUM_IPV4;
 		break;
 
 	case SFXGE_TXQ_IP_TCP_UDP_CKSUM:
-		flags = EFX_CKSUM_IPV4 | EFX_CKSUM_TCPUDP;
+		flags = EFX_TXQ_CKSUM_IPV4 | EFX_TXQ_CKSUM_TCPUDP;
 		break;
 
 	default:
@@ -2817,7 +2817,7 @@ sfxge_tx_packet_add(sfxge_t *sp, mblk_t *mp)
 		sfxge_rx_scale_t *srsp = &(sp->s_rx_scale);
 
 		if (srsp->srs_state == SFXGE_RX_SCALE_STARTED) {
-			uint16_t hash;
+			uint32_t hash;
 
 			if (srsp->srs_count > 1) {
 				/*
@@ -2831,10 +2831,10 @@ sfxge_tx_packet_add(sfxge_t *sp, mblk_t *mp)
 				}
 
 				if (thp != NULL) {
-					SFXGE_TCP_HASH(
-					    iphp->ip_dst.s_addr,
+					SFXGE_TCP_HASH(sp,
+					    &iphp->ip_dst.s_addr,
 					    thp->th_dport,
-					    iphp->ip_src.s_addr,
+					    &iphp->ip_src.s_addr,
 					    thp->th_sport, hash);
 
 					index = srsp->srs_tbl[hash %
@@ -2845,9 +2845,9 @@ sfxge_tx_packet_add(sfxge_t *sp, mblk_t *mp)
 					 * TCP/UDP/SCTP src/dest ports. Ports
 					 * are zero for other IPv4 protocols.
 					 */
-					SFXGE_IP_HASH(
-					    iphp->ip_dst.s_addr, dport,
-					    iphp->ip_src.s_addr, sport, hash);
+					SFXGE_IP_HASH(sp,
+					    &iphp->ip_dst.s_addr, dport,
+					    &iphp->ip_src.s_addr, sport, hash);
 
 					index = srsp->srs_tbl[hash %
 					    SFXGE_RX_SCALE_MAX];
@@ -2894,7 +2894,7 @@ sfxge_tx_packet_add(sfxge_t *sp, mblk_t *mp)
 		sfxge_rx_scale_t *srsp = &(sp->s_rx_scale);
 
 		if (srsp->srs_state == SFXGE_RX_SCALE_STARTED) {
-			uint16_t hash = 0;
+			uint32_t hash = 0;
 
 			if (srsp->srs_count > 1) {
 				if (iphp == NULL) {
@@ -2909,9 +2909,9 @@ sfxge_tx_packet_add(sfxge_t *sp, mblk_t *mp)
 					 * TCP/UDP/SCTP src/dest ports. Ports
 					 * are zero for other IPv4 protocols.
 					 */
-					SFXGE_IP_HASH(
-					    iphp->ip_dst.s_addr, dport,
-					    iphp->ip_src.s_addr, sport, hash);
+					SFXGE_IP_HASH(sp,
+					    &iphp->ip_dst.s_addr, dport,
+					    &iphp->ip_src.s_addr, sport, hash);
 
 					hash = hash % SFXGE_RX_SCALE_MAX;
 				}

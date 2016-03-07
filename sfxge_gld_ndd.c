@@ -89,345 +89,333 @@ static int
 sfxge_gld_nd_get(sfxge_t *sp, unsigned int id, uint32_t *valp)
 {
 	efx_nic_t *enp = sp->s_enp;
-	unsigned int nprops;
 	int rc;
-
-	nprops = efx_nic_cfg_get(enp)->enc_phy_nprops;
 
 	if (sp->s_mac.sm_state != SFXGE_MAC_STARTED) {
 		rc = ENODEV;
 		goto fail1;
 	}
 
-	ASSERT3U(id, <, nprops + SFXGE_NPROPS);
-
-	if (id < nprops) {
-		if ((rc = efx_phy_prop_get(enp, id, 0, valp)) != 0)
-			goto fail2;
-	} else {
-		id -= nprops;
-
-		switch (id) {
-		case SFXGE_RX_COALESCE_MODE: {
-			sfxge_rx_coalesce_mode_t mode;
+	ASSERT3U(id, <, SFXGE_NPROPS);
+
+	switch (id) {
+	case SFXGE_RX_COALESCE_MODE: {
+		sfxge_rx_coalesce_mode_t mode;
 
-			sfxge_rx_coalesce_mode_get(sp, &mode);
-
-			*valp = mode;
-			break;
-		}
-		case SFXGE_RX_SCALE_COUNT: {
-			unsigned int count;
+		sfxge_rx_coalesce_mode_get(sp, &mode);
 
-			if (sfxge_rx_scale_count_get(sp, &count) != 0)
-				count = 0;
-
-			*valp = count;
-			break;
-		}
-		case SFXGE_FCNTL_RESPOND: {
-			unsigned int fcntl;
+		*valp = mode;
+		break;
+	}
+	case SFXGE_RX_SCALE_COUNT: {
+		unsigned int count;
 
-			sfxge_mac_fcntl_get(sp, &fcntl);
-
-			*valp = (fcntl & EFX_FCNTL_RESPOND) ? 1 : 0;
-			break;
-		}
-		case SFXGE_FCNTL_GENERATE: {
-			unsigned int fcntl;
+		if (sfxge_rx_scale_count_get(sp, &count) != 0)
+			count = 0;
 
-			sfxge_mac_fcntl_get(sp, &fcntl);
-
-			*valp = (fcntl & EFX_FCNTL_GENERATE) ? 1 : 0;
-			break;
-		}
-		case SFXGE_INTR_MODERATION: {
-			unsigned int us;
+		*valp = count;
+		break;
+	}
+	case SFXGE_FCNTL_RESPOND: {
+		unsigned int fcntl;
 
-			sfxge_ev_moderation_get(sp, &us);
-
-			*valp = (long)us;
-			break;
-		}
-		case SFXGE_ADV_AUTONEG: {
-			uint32_t mask;
+		sfxge_mac_fcntl_get(sp, &fcntl);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
-
-			*valp = (mask & (1 << EFX_PHY_CAP_AN)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_ADV_40GFDX: {
-			uint32_t mask;
+		*valp = (fcntl & EFX_FCNTL_RESPOND) ? 1 : 0;
+		break;
+	}
+	case SFXGE_FCNTL_GENERATE: {
+		unsigned int fcntl;
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
-
-			*valp = (mask & (1 << EFX_PHY_CAP_40000FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_ADV_10GFDX: {
-			uint32_t mask;
+		sfxge_mac_fcntl_get(sp, &fcntl);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
-
-			*valp = (mask & (1 << EFX_PHY_CAP_10000FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_ADV_1000FDX: {
-			uint32_t mask;
+		*valp = (fcntl & EFX_FCNTL_GENERATE) ? 1 : 0;
+		break;
+	}
+	case SFXGE_INTR_MODERATION: {
+		unsigned int us;
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
-
-			*valp = (mask & (1 << EFX_PHY_CAP_1000FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_ADV_1000HDX: {
-			uint32_t mask;
+		sfxge_ev_moderation_get(sp, &us);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
-
-			*valp = (mask & (1 << EFX_PHY_CAP_1000HDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_ADV_100FDX: {
-			uint32_t mask;
+		*valp = (long)us;
+		break;
+	}
+	case SFXGE_ADV_AUTONEG: {
+		uint32_t mask;
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
-
-			*valp = (mask & (1 << EFX_PHY_CAP_100FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_ADV_100HDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_AN)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_ADV_40GFDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_100HDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_ADV_10FDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_40000FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_ADV_10GFDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_10FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_ADV_10HDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_10000FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_ADV_1000FDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_10HDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_ADV_PAUSE: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_1000FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_ADV_1000HDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_PAUSE)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_ADV_ASM_PAUSE: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_1000HDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_ADV_100FDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_ASYM)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_LP_AUTONEG: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_100FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_ADV_100HDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_AN)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_LP_40GFDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_lp_cap_get(enp, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_100HDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_ADV_10FDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_40000FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_LP_10GFDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_lp_cap_get(enp, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_10FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_ADV_10HDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_10000FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_LP_1000FDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_lp_cap_get(enp, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_10HDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_ADV_PAUSE: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_1000FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_LP_1000HDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_lp_cap_get(enp, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_PAUSE)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_ADV_ASM_PAUSE: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_1000HDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_LP_100FDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_lp_cap_get(enp, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_ASYM)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_LP_AUTONEG: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_100FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_LP_100HDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			efx_phy_lp_cap_get(enp, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_AN)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_LP_40GFDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_100HDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_LP_10FDX: {
-			uint32_t mask;
+		efx_phy_lp_cap_get(enp, &mask);
 
-			efx_phy_lp_cap_get(enp, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_40000FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_LP_10GFDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_10FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_LP_10HDX: {
-			uint32_t mask;
+		efx_phy_lp_cap_get(enp, &mask);
 
-			efx_phy_lp_cap_get(enp, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_10000FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_LP_1000FDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_10HDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_LP_PAUSE: {
-			uint32_t mask;
+		efx_phy_lp_cap_get(enp, &mask);
 
-			efx_phy_lp_cap_get(enp, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_1000FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_LP_1000HDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_PAUSE)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_LP_ASM_PAUSE: {
-			uint32_t mask;
+		efx_phy_lp_cap_get(enp, &mask);
 
-			efx_phy_lp_cap_get(enp, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_1000HDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_LP_100FDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_ASYM)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_CAP_AUTONEG: {
-			uint32_t mask;
+		efx_phy_lp_cap_get(enp, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_100FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_LP_100HDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_AN)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_CAP_40GFDX: {
-			uint32_t mask;
+		efx_phy_lp_cap_get(enp, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_100HDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_LP_10FDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_40000FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_CAP_10GFDX: {
-			uint32_t mask;
+		efx_phy_lp_cap_get(enp, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_10FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_LP_10HDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_10000FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_CAP_1000FDX: {
-			uint32_t mask;
+		efx_phy_lp_cap_get(enp, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_10HDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_LP_PAUSE: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_1000FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_CAP_1000HDX: {
-			uint32_t mask;
+		efx_phy_lp_cap_get(enp, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_PAUSE)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_LP_ASM_PAUSE: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_1000HDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_CAP_100FDX: {
-			uint32_t mask;
+		efx_phy_lp_cap_get(enp, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_ASYM)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_CAP_AUTONEG: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_100FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_CAP_100HDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_AN)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_CAP_40GFDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_100HDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_CAP_10FDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_40000FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_CAP_10GFDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_10FDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_CAP_10HDX: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_10000FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_CAP_1000FDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_10HDX)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_CAP_PAUSE: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_1000FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_CAP_1000HDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_PAUSE)) ? 1 : 0;
-			break;
-		}
-		case SFXGE_CAP_ASM_PAUSE: {
-			uint32_t mask;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+		*valp = (mask & (1 << EFX_PHY_CAP_1000HDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_CAP_100FDX: {
+		uint32_t mask;
 
-			*valp = (mask & (1 << EFX_PHY_CAP_ASYM)) ? 1 : 0;
-			break;
-		}
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+
+		*valp = (mask & (1 << EFX_PHY_CAP_100FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_CAP_100HDX: {
+		uint32_t mask;
+
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+
+		*valp = (mask & (1 << EFX_PHY_CAP_100HDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_CAP_10FDX: {
+		uint32_t mask;
+
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+
+		*valp = (mask & (1 << EFX_PHY_CAP_10FDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_CAP_10HDX: {
+		uint32_t mask;
+
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+
+		*valp = (mask & (1 << EFX_PHY_CAP_10HDX)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_CAP_PAUSE: {
+		uint32_t mask;
+
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+
+		*valp = (mask & (1 << EFX_PHY_CAP_PAUSE)) ? 1 : 0;
+		break;
+	}
+	case SFXGE_CAP_ASM_PAUSE: {
+		uint32_t mask;
+
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_DEFAULT, &mask);
+
+		*valp = (mask & (1 << EFX_PHY_CAP_ASYM)) ? 1 : 0;
+		break;
+	}
 #if EFSYS_OPT_MCDI_LOGGING
-		case SFXGE_MCDI_LOGGING: {
-			*valp = sp->s_mcdi_logging;
-			break;
-		}
+	case SFXGE_MCDI_LOGGING: {
+		*valp = sp->s_mcdi_logging;
+		break;
+	}
 #endif
-		default:
-			ASSERT(B_FALSE);
-			break;
-		}
+	default:
+		ASSERT(B_FALSE);
+		break;
 	}
 
 	return (0);
-fail2:
-	DTRACE_PROBE(fail2);
 fail1:
 	DTRACE_PROBE1(fail1, int, rc);
 
@@ -472,249 +460,239 @@ static int
 sfxge_gld_nd_set(sfxge_t *sp, unsigned int id, uint32_t val)
 {
 	efx_nic_t *enp = sp->s_enp;
-	unsigned int nprops;
 	int rc;
 
-	nprops = efx_nic_cfg_get(enp)->enc_phy_nprops;
+	ASSERT3U(id, <, SFXGE_NPROPS);
 
-	ASSERT3U(id, <, nprops + SFXGE_NPROPS);
+	switch (id) {
+	case SFXGE_RX_COALESCE_MODE: {
+		sfxge_rx_coalesce_mode_t mode =
+		    (sfxge_rx_coalesce_mode_t)val;
 
-	if (id < nprops) {
-		if ((rc = efx_phy_prop_set(enp, id, val)) != 0)
+		if ((rc = sfxge_rx_coalesce_mode_set(sp, mode)) != 0)
 			goto fail1;
-	} else {
-		id -= nprops;
 
-		switch (id) {
-		case SFXGE_RX_COALESCE_MODE: {
-			sfxge_rx_coalesce_mode_t mode =
-			    (sfxge_rx_coalesce_mode_t)val;
+		break;
+	}
+	case SFXGE_RX_SCALE_COUNT: {
+		unsigned int count = (unsigned int)val;
 
-			if ((rc = sfxge_rx_coalesce_mode_set(sp, mode)) != 0)
-				goto fail1;
+		if ((rc = sfxge_rx_scale_count_set(sp, count)) != 0)
+			goto fail1;
 
-			break;
-		}
-		case SFXGE_RX_SCALE_COUNT: {
-			unsigned int count = (unsigned int)val;
+		break;
+	}
+	case SFXGE_FCNTL_RESPOND: {
+		unsigned int fcntl;
 
-			if ((rc = sfxge_rx_scale_count_set(sp, count)) != 0)
-				goto fail1;
+		sfxge_mac_fcntl_get(sp, &fcntl);
 
-			break;
-		}
-		case SFXGE_FCNTL_RESPOND: {
-			unsigned int fcntl;
+		if (val != 0)
+			fcntl |= EFX_FCNTL_RESPOND;
+		else
+			fcntl &= ~EFX_FCNTL_RESPOND;
 
-			sfxge_mac_fcntl_get(sp, &fcntl);
+		if ((rc = sfxge_mac_fcntl_set(sp, fcntl)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				fcntl |= EFX_FCNTL_RESPOND;
-			else
-				fcntl &= ~EFX_FCNTL_RESPOND;
+		break;
+	}
+	case SFXGE_FCNTL_GENERATE: {
+		unsigned int fcntl;
 
-			if ((rc = sfxge_mac_fcntl_set(sp, fcntl)) != 0)
-				goto fail1;
+		sfxge_mac_fcntl_get(sp, &fcntl);
 
-			break;
-		}
-		case SFXGE_FCNTL_GENERATE: {
-			unsigned int fcntl;
+		if (val != 0)
+			fcntl |= EFX_FCNTL_GENERATE;
+		else
+			fcntl &= ~EFX_FCNTL_GENERATE;
 
-			sfxge_mac_fcntl_get(sp, &fcntl);
+		if ((rc = sfxge_mac_fcntl_set(sp, fcntl)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				fcntl |= EFX_FCNTL_GENERATE;
-			else
-				fcntl &= ~EFX_FCNTL_GENERATE;
+		break;
+	}
+	case SFXGE_INTR_MODERATION: {
+		unsigned int us = (unsigned int)val;
 
-			if ((rc = sfxge_mac_fcntl_set(sp, fcntl)) != 0)
-				goto fail1;
+		if ((rc = sfxge_ev_moderation_set(sp, us)) != 0)
+			goto fail1;
+		break;
+	}
+	case SFXGE_ADV_AUTONEG: {
+		uint32_t mask;
 
-			break;
-		}
-		case SFXGE_INTR_MODERATION: {
-			unsigned int us = (unsigned int)val;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			if ((rc = sfxge_ev_moderation_set(sp, us)) != 0)
-				goto fail1;
-			break;
-		}
-		case SFXGE_ADV_AUTONEG: {
-			uint32_t mask;
+		if (val != 0)
+			mask |= (1 << EFX_PHY_CAP_AN);
+		else
+			mask &= ~(1 << EFX_PHY_CAP_AN);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				mask |= (1 << EFX_PHY_CAP_AN);
-			else
-				mask &= ~(1 << EFX_PHY_CAP_AN);
+		break;
+	}
+	case SFXGE_ADV_40GFDX: {
+		uint32_t mask;
 
-			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
-				goto fail1;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			break;
-		}
-		case SFXGE_ADV_40GFDX: {
-			uint32_t mask;
+		if (val != 0)
+			mask |= (1 << EFX_PHY_CAP_40000FDX);
+		else
+			mask &= ~(1 << EFX_PHY_CAP_40000FDX);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				mask |= (1 << EFX_PHY_CAP_40000FDX);
-			else
-				mask &= ~(1 << EFX_PHY_CAP_40000FDX);
+		break;
+	}
+	case SFXGE_ADV_10GFDX: {
+		uint32_t mask;
 
-			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
-				goto fail1;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			break;
-		}
-		case SFXGE_ADV_10GFDX: {
-			uint32_t mask;
+		if (val != 0)
+			mask |= (1 << EFX_PHY_CAP_10000FDX);
+		else
+			mask &= ~(1 << EFX_PHY_CAP_10000FDX);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				mask |= (1 << EFX_PHY_CAP_10000FDX);
-			else
-				mask &= ~(1 << EFX_PHY_CAP_10000FDX);
+		break;
+	}
+	case SFXGE_ADV_1000FDX: {
+		uint32_t mask;
 
-			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
-				goto fail1;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			break;
-		}
-		case SFXGE_ADV_1000FDX: {
-			uint32_t mask;
+		if (val != 0)
+			mask |= (1 << EFX_PHY_CAP_1000FDX);
+		else
+			mask &= ~(1 << EFX_PHY_CAP_1000FDX);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				mask |= (1 << EFX_PHY_CAP_1000FDX);
-			else
-				mask &= ~(1 << EFX_PHY_CAP_1000FDX);
+		break;
+	}
+	case SFXGE_ADV_1000HDX: {
+		uint32_t mask;
 
-			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
-				goto fail1;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			break;
-		}
-		case SFXGE_ADV_1000HDX: {
-			uint32_t mask;
+		if (val != 0)
+			mask |= (1 << EFX_PHY_CAP_1000HDX);
+		else
+			mask &= ~(1 << EFX_PHY_CAP_1000HDX);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				mask |= (1 << EFX_PHY_CAP_1000HDX);
-			else
-				mask &= ~(1 << EFX_PHY_CAP_1000HDX);
+		break;
+	}
+	case SFXGE_ADV_100FDX: {
+		uint32_t mask;
 
-			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
-				goto fail1;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			break;
-		}
-		case SFXGE_ADV_100FDX: {
-			uint32_t mask;
+		if (val != 0)
+			mask |= (1 << EFX_PHY_CAP_100FDX);
+		else
+			mask &= ~(1 << EFX_PHY_CAP_100FDX);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				mask |= (1 << EFX_PHY_CAP_100FDX);
-			else
-				mask &= ~(1 << EFX_PHY_CAP_100FDX);
+		break;
+	}
+	case SFXGE_ADV_100HDX: {
+		uint32_t mask;
 
-			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
-				goto fail1;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			break;
-		}
-		case SFXGE_ADV_100HDX: {
-			uint32_t mask;
+		if (val != 0)
+			mask |= (1 << EFX_PHY_CAP_100HDX);
+		else
+			mask &= ~(1 << EFX_PHY_CAP_100HDX);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				mask |= (1 << EFX_PHY_CAP_100HDX);
-			else
-				mask &= ~(1 << EFX_PHY_CAP_100HDX);
+		break;
+	}
+	case SFXGE_ADV_10FDX: {
+		uint32_t mask;
 
-			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
-				goto fail1;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			break;
-		}
-		case SFXGE_ADV_10FDX: {
-			uint32_t mask;
+		if (val != 0)
+			mask |= (1 << EFX_PHY_CAP_10FDX);
+		else
+			mask &= ~(1 << EFX_PHY_CAP_10FDX);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				mask |= (1 << EFX_PHY_CAP_10FDX);
-			else
-				mask &= ~(1 << EFX_PHY_CAP_10FDX);
+		break;
+	}
+	case SFXGE_ADV_10HDX: {
+		uint32_t mask;
 
-			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
-				goto fail1;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			break;
-		}
-		case SFXGE_ADV_10HDX: {
-			uint32_t mask;
+		if (val != 0)
+			mask |= (1 << EFX_PHY_CAP_10HDX);
+		else
+			mask &= ~(1 << EFX_PHY_CAP_10HDX);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				mask |= (1 << EFX_PHY_CAP_10HDX);
-			else
-				mask &= ~(1 << EFX_PHY_CAP_10HDX);
+		break;
+	}
+	case SFXGE_ADV_PAUSE: {
+		uint32_t mask;
 
-			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
-				goto fail1;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			break;
-		}
-		case SFXGE_ADV_PAUSE: {
-			uint32_t mask;
+		if (val != 0)
+			mask |= (1 << EFX_PHY_CAP_PAUSE);
+		else
+			mask &= ~(1 << EFX_PHY_CAP_PAUSE);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				mask |= (1 << EFX_PHY_CAP_PAUSE);
-			else
-				mask &= ~(1 << EFX_PHY_CAP_PAUSE);
+		break;
+	}
+	case SFXGE_ADV_ASM_PAUSE: {
+		uint32_t mask;
 
-			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
-				goto fail1;
+		efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
 
-			break;
-		}
-		case SFXGE_ADV_ASM_PAUSE: {
-			uint32_t mask;
+		if (val != 0)
+			mask |= (1 << EFX_PHY_CAP_ASYM);
+		else
+			mask &= ~(1 << EFX_PHY_CAP_ASYM);
 
-			efx_phy_adv_cap_get(enp, EFX_PHY_CAP_CURRENT, &mask);
+		if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
+			goto fail1;
 
-			if (val != 0)
-				mask |= (1 << EFX_PHY_CAP_ASYM);
-			else
-				mask &= ~(1 << EFX_PHY_CAP_ASYM);
-
-			if ((rc = efx_phy_adv_cap_set(enp, mask)) != 0)
-				goto fail1;
-
-			break;
-		}
+		break;
+	}
 #if EFSYS_OPT_MCDI_LOGGING
-		case SFXGE_MCDI_LOGGING: {
-			sp->s_mcdi_logging = val;
-			break;
-		}
+	case SFXGE_MCDI_LOGGING: {
+		sp->s_mcdi_logging = val;
+		break;
+	}
 #endif
-		/* Ignore other kstat writes. Might be for the link partner */
-		default:
-			DTRACE_PROBE1(ignore_kstat_write, int, id);
-		}
+	/* Ignore other kstat writes. Might be for the link partner */
+	default:
+		DTRACE_PROBE1(ignore_kstat_write, int, id);
 	}
 
 	return (0);
@@ -766,14 +744,10 @@ static int
 sfxge_gld_nd_update(kstat_t *ksp, int rw)
 {
 	sfxge_t *sp = ksp->ks_private;
-	efx_nic_t *enp = sp->s_enp;
-	unsigned int nprops;
 	unsigned int id;
 	int rc = 0;
 
-	nprops = efx_nic_cfg_get(enp)->enc_phy_nprops;
-
-	for (id = 0; id < nprops + SFXGE_NPROPS; id++) {
+	for (id = 0; id < SFXGE_NPROPS; id++) {
 		kstat_named_t *knp = &(sp->s_nd_stat[id]);
 
 		if (rw == KSTAT_READ)
@@ -1080,8 +1054,6 @@ sfxge_gld_nd_register(sfxge_t *sp)
 #ifdef _USE_NDD_PROPS
 	caddr_t *ndhp = &(sp->s_ndh);
 #endif
-	efx_nic_t *enp = sp->s_enp;
-	unsigned int nprops;
 	unsigned int id;
 	char name[MAXNAMELEN];
 	kstat_t *ksp;
@@ -1089,39 +1061,21 @@ sfxge_gld_nd_register(sfxge_t *sp)
 
 	ASSERT3P(sp->s_ndh, ==, NULL);
 
-	nprops = efx_nic_cfg_get(enp)->enc_phy_nprops;
-
 #ifdef _USE_NDD_PROPS
 	/* Register with the NDD framework */
-	if ((sp->s_ndp = kmem_zalloc(sizeof (sfxge_ndd_param_t) *
-	    (nprops + SFXGE_NPROPS), KM_NOSLEEP)) == NULL) {
+	if ((sp->s_ndp = kmem_zalloc(sizeof (sfxge_ndd_param_t) * SFXGE_NPROPS,
+	    KM_NOSLEEP)) == NULL) {
 		rc = ENOMEM;
 		goto fail1;
 	}
 
-	for (id = 0; id < nprops; id++) {
-		sfxge_ndd_param_t *snpp = &(sp->s_ndp[id]);
-
-		snpp->snp_sp = sp;
-		snpp->snp_id = id;
-		snpp->snp_name = efx_phy_prop_name(enp, id);
-		snpp->snp_get = sfxge_gld_nd_get_ioctl;
-		snpp->snp_set = sfxge_gld_nd_set_ioctl;
-
-		ASSERT(snpp->snp_name != NULL);
-
-		(void) nd_load(ndhp, (char *)(snpp->snp_name),
-		    snpp->snp_get, snpp->snp_set, (caddr_t)snpp);
-	}
-
 	for (id = 0; id < SFXGE_NPROPS; id++) {
-		sfxge_ndd_param_t *snpp = &(sp->s_ndp[id + nprops]);
+		sfxge_ndd_param_t *snpp = &(sp->s_ndp[id]);
 
 		*snpp = sfxge_ndd_param[id];
 		ASSERT3U(snpp->snp_id, ==, id);
 
 		snpp->snp_sp = sp;
-		snpp->snp_id += nprops;
 
 		(void) nd_load(ndhp, (char *)(snpp->snp_name),
 		    snpp->snp_get, snpp->snp_set, (caddr_t)snpp);
@@ -1134,7 +1088,7 @@ sfxge_gld_nd_register(sfxge_t *sp)
 
 	if ((ksp = kstat_create((char *)ddi_driver_name(sp->s_dip),
 	    ddi_get_instance(sp->s_dip), name, "ndd", KSTAT_TYPE_NAMED,
-	    (nprops + SFXGE_NPROPS), KSTAT_FLAG_WRITABLE)) == NULL) {
+	    SFXGE_NPROPS, KSTAT_FLAG_WRITABLE)) == NULL) {
 		rc = ENOMEM;
 		goto fail2;
 	}
@@ -1146,15 +1100,8 @@ sfxge_gld_nd_register(sfxge_t *sp)
 
 	sp->s_nd_stat = ksp->ks_data;
 
-	for (id = 0; id < nprops; id++) {
-		kstat_named_t *knp = &(sp->s_nd_stat[id]);
-
-		kstat_named_init(knp, (char *)efx_phy_prop_name(enp, id),
-		    KSTAT_DATA_UINT32);
-	}
-
 	for (id = 0; id < SFXGE_NPROPS; id++) {
-		kstat_named_t *knp = &(sp->s_nd_stat[id + nprops]);
+		kstat_named_t *knp = &(sp->s_nd_stat[id]);
 		sfxge_ndd_param_t *snpp = &sfxge_ndd_param[id];
 
 		kstat_named_init(knp, (char *)(snpp->snp_name),
@@ -1172,8 +1119,7 @@ fail2:
 	nd_free(ndhp);
 	sp->s_ndh = NULL;
 
-	kmem_free(sp->s_ndp, sizeof (sfxge_ndd_param_t) *
-	    (nprops + SFXGE_NPROPS));
+	kmem_free(sp->s_ndp, sizeof (sfxge_ndd_param_t) * SFXGE_NPROPS);
 	sp->s_ndp = NULL;
 
 fail1:
@@ -1190,10 +1136,6 @@ sfxge_gld_nd_unregister(sfxge_t *sp)
 #ifdef _USE_NDD_PROPS
 	caddr_t *ndhp = &(sp->s_ndh);
 #endif
-	efx_nic_t *enp = sp->s_enp;
-	unsigned int nprops;
-
-	nprops = efx_nic_cfg_get(enp)->enc_phy_nprops;
 
 	/* Destroy the kstat set */
 	kstat_delete(sp->s_nd_ksp);
@@ -1206,8 +1148,7 @@ sfxge_gld_nd_unregister(sfxge_t *sp)
 
 	sp->s_ndh = NULL;
 
-	kmem_free(sp->s_ndp, sizeof (sfxge_ndd_param_t) *
-	    (nprops + SFXGE_NPROPS));
+	kmem_free(sp->s_ndp, sizeof (sfxge_ndd_param_t) * SFXGE_NPROPS);
 	sp->s_ndp = NULL;
 #endif
 }

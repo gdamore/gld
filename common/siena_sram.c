@@ -28,7 +28,6 @@
  * policies, either expressed or implied, of the FreeBSD Project.
  */
 
-#include "efsys.h"
 #include "efx.h"
 #include "efx_impl.h"
 

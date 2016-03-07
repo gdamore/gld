@@ -28,100 +28,98 @@
  * policies, either expressed or implied, of the FreeBSD Project.
  */
 
-#include "efsys.h"
 #include "efx.h"
-#include "efx_types.h"
-#include "efx_regs_mcdi.h"
 #include "efx_impl.h"
 
-#if EFSYS_OPT_HUNTINGTON
+#if EFSYS_OPT_HUNTINGTON || EFSYS_OPT_MEDFORD
 
 #if EFSYS_OPT_FILTER
 
-#define	HFE_SPEC(hftp, index)	((hftp)->hft_entry[(index)].hfe_spec)
+#define	EFE_SPEC(eftp, index)	((eftp)->eft_entry[(index)].efe_spec)
 
 static			efx_filter_spec_t *
-hunt_filter_entry_spec(
-	__in		const hunt_filter_table_t *hftp,
+ef10_filter_entry_spec(
+	__in		const ef10_filter_table_t *eftp,
 	__in		unsigned int index)
 {
-	return ((efx_filter_spec_t *)(HFE_SPEC(hftp, index) &
-		~(uintptr_t)EFX_HUNT_FILTER_FLAGS));
+	return ((efx_filter_spec_t *)(EFE_SPEC(eftp, index) &
+		~(uintptr_t)EFX_EF10_FILTER_FLAGS));
 }
 
 static			boolean_t
-hunt_filter_entry_is_busy(
-	__in		const hunt_filter_table_t *hftp,
+ef10_filter_entry_is_busy(
+	__in		const ef10_filter_table_t *eftp,
 	__in		unsigned int index)
 {
-	if (HFE_SPEC(hftp, index) & EFX_HUNT_FILTER_FLAG_BUSY)
+	if (EFE_SPEC(eftp, index) & EFX_EF10_FILTER_FLAG_BUSY)
 		return (B_TRUE);
 	else
 		return (B_FALSE);
 }
 
 static			boolean_t
-hunt_filter_entry_is_auto_old(
-	__in		const hunt_filter_table_t *hftp,
+ef10_filter_entry_is_auto_old(
+	__in		const ef10_filter_table_t *eftp,
 	__in		unsigned int index)
 {
-	if (HFE_SPEC(hftp, index) & EFX_HUNT_FILTER_FLAG_AUTO_OLD)
+	if (EFE_SPEC(eftp, index) & EFX_EF10_FILTER_FLAG_AUTO_OLD)
 		return (B_TRUE);
 	else
 		return (B_FALSE);
 }
 
 static			void
-hunt_filter_set_entry(
-	__inout		hunt_filter_table_t *hftp,
+ef10_filter_set_entry(
+	__inout		ef10_filter_table_t *eftp,
 	__in		unsigned int index,
 	__in_opt	const efx_filter_spec_t *efsp)
 {
-	HFE_SPEC(hftp, index) = (uintptr_t)efsp;
+	EFE_SPEC(eftp, index) = (uintptr_t)efsp;
 }
 
 static			void
-hunt_filter_set_entry_busy(
-	__inout		hunt_filter_table_t *hftp,
+ef10_filter_set_entry_busy(
+	__inout		ef10_filter_table_t *eftp,
 	__in		unsigned int index)
 {
-	HFE_SPEC(hftp, index) |= (uintptr_t)EFX_HUNT_FILTER_FLAG_BUSY;
+	EFE_SPEC(eftp, index) |= (uintptr_t)EFX_EF10_FILTER_FLAG_BUSY;
 }
 
 static			void
-hunt_filter_set_entry_not_busy(
-	__inout		hunt_filter_table_t *hftp,
+ef10_filter_set_entry_not_busy(
+	__inout		ef10_filter_table_t *eftp,
 	__in		unsigned int index)
 {
-	HFE_SPEC(hftp, index) &= ~(uintptr_t)EFX_HUNT_FILTER_FLAG_BUSY;
+	EFE_SPEC(eftp, index) &= ~(uintptr_t)EFX_EF10_FILTER_FLAG_BUSY;
 }
 
 static			void
-hunt_filter_set_entry_auto_old(
-	__inout		hunt_filter_table_t *hftp,
+ef10_filter_set_entry_auto_old(
+	__inout		ef10_filter_table_t *eftp,
 	__in		unsigned int index)
 {
-	EFSYS_ASSERT(hunt_filter_entry_spec(hftp, index) != NULL);
-	HFE_SPEC(hftp, index) |= (uintptr_t)EFX_HUNT_FILTER_FLAG_AUTO_OLD;
+	EFSYS_ASSERT(ef10_filter_entry_spec(eftp, index) != NULL);
+	EFE_SPEC(eftp, index) |= (uintptr_t)EFX_EF10_FILTER_FLAG_AUTO_OLD;
 }
 
 static			void
-hunt_filter_set_entry_not_auto_old(
-	__inout		hunt_filter_table_t *hftp,
+ef10_filter_set_entry_not_auto_old(
+	__inout		ef10_filter_table_t *eftp,
 	__in		unsigned int index)
 {
-	HFE_SPEC(hftp, index) &= ~(uintptr_t)EFX_HUNT_FILTER_FLAG_AUTO_OLD;
-	EFSYS_ASSERT(hunt_filter_entry_spec(hftp, index) != NULL);
+	EFE_SPEC(eftp, index) &= ~(uintptr_t)EFX_EF10_FILTER_FLAG_AUTO_OLD;
+	EFSYS_ASSERT(ef10_filter_entry_spec(eftp, index) != NULL);
 }
 
 	__checkReturn	efx_rc_t
-hunt_filter_init(
+ef10_filter_init(
 	__in		efx_nic_t *enp)
 {
 	efx_rc_t rc;
-	hunt_filter_table_t *hftp;
+	ef10_filter_table_t *eftp;
 
-	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON);
+	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON ||
+		    enp->en_family == EFX_FAMILY_MEDFORD);
 
 #define	MATCH_MASK(match) (EFX_MASK32(match) << EFX_LOW_BIT(match))
 	EFX_STATIC_ASSERT(EFX_FILTER_MATCH_REM_HOST ==
@@ -146,14 +144,14 @@ hunt_filter_init(
 	    MATCH_MASK(MC_CMD_FILTER_OP_IN_MATCH_IP_PROTO));
 #undef MATCH_MASK
 
-	EFSYS_KMEM_ALLOC(enp->en_esip, sizeof (hunt_filter_table_t), hftp);
+	EFSYS_KMEM_ALLOC(enp->en_esip, sizeof (ef10_filter_table_t), eftp);
 
-	if (!hftp) {
+	if (!eftp) {
 		rc = ENOMEM;
 		goto fail1;
 	}
 
-	enp->en_filter.ef_hunt_filter_table = hftp;
+	enp->en_filter.ef_ef10_filter_table = eftp;
 
 	return (0);
 
@@ -164,14 +162,15 @@ fail1:
 }
 
 			void
-hunt_filter_fini(
+ef10_filter_fini(
 	__in		efx_nic_t *enp)
 {
-	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON);
+	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON ||
+		    enp->en_family == EFX_FAMILY_MEDFORD);
 
-	if (enp->en_filter.ef_hunt_filter_table != NULL) {
-		EFSYS_KMEM_FREE(enp->en_esip, sizeof (hunt_filter_table_t),
-		    enp->en_filter.ef_hunt_filter_table);
+	if (enp->en_filter.ef_ef10_filter_table != NULL) {
+		EFSYS_KMEM_FREE(enp->en_esip, sizeof (ef10_filter_table_t),
+		    enp->en_filter.ef_ef10_filter_table);
 	}
 }
 
@@ -180,7 +179,7 @@ efx_mcdi_filter_op_add(
 	__in		efx_nic_t *enp,
 	__in		efx_filter_spec_t *spec,
 	__in		unsigned int filter_op,
-	__inout		hunt_filter_handle_t *handle)
+	__inout		ef10_filter_handle_t *handle)
 {
 	efx_mcdi_req_t req;
 	uint8_t payload[MAX(MC_CMD_FILTER_OP_IN_LEN,
@@ -198,9 +197,9 @@ efx_mcdi_filter_op_add(
 	switch (filter_op) {
 	case MC_CMD_FILTER_OP_IN_OP_REPLACE:
 		MCDI_IN_SET_DWORD(req, FILTER_OP_IN_HANDLE_LO,
-		    handle->hfh_lo);
+		    handle->efh_lo);
 		MCDI_IN_SET_DWORD(req, FILTER_OP_IN_HANDLE_HI,
-		    handle->hfh_hi);
+		    handle->efh_hi);
 		/* Fall through */
 	case MC_CMD_FILTER_OP_IN_OP_INSERT:
 	case MC_CMD_FILTER_OP_IN_OP_SUBSCRIBE:
@@ -299,8 +298,8 @@ efx_mcdi_filter_op_add(
 		goto fail3;
 	}
 
-	handle->hfh_lo = MCDI_OUT_DWORD(req, FILTER_OP_OUT_HANDLE_LO);
-	handle->hfh_hi = MCDI_OUT_DWORD(req, FILTER_OP_OUT_HANDLE_HI);
+	handle->efh_lo = MCDI_OUT_DWORD(req, FILTER_OP_OUT_HANDLE_LO);
+	handle->efh_hi = MCDI_OUT_DWORD(req, FILTER_OP_OUT_HANDLE_HI);
 
 	return (0);
 
@@ -319,7 +318,7 @@ static	__checkReturn	efx_rc_t
 efx_mcdi_filter_op_delete(
 	__in		efx_nic_t *enp,
 	__in		unsigned int filter_op,
-	__inout		hunt_filter_handle_t *handle)
+	__inout		ef10_filter_handle_t *handle)
 {
 	efx_mcdi_req_t req;
 	uint8_t payload[MAX(MC_CMD_FILTER_OP_IN_LEN,
@@ -348,8 +347,8 @@ efx_mcdi_filter_op_delete(
 		goto fail1;
 	}
 
-	MCDI_IN_SET_DWORD(req, FILTER_OP_IN_HANDLE_LO, handle->hfh_lo);
-	MCDI_IN_SET_DWORD(req, FILTER_OP_IN_HANDLE_HI, handle->hfh_hi);
+	MCDI_IN_SET_DWORD(req, FILTER_OP_IN_HANDLE_LO, handle->efh_lo);
+	MCDI_IN_SET_DWORD(req, FILTER_OP_IN_HANDLE_HI, handle->efh_hi);
 
 	efx_mcdi_execute(enp, &req);
 
@@ -377,7 +376,7 @@ fail1:
 }
 
 static	__checkReturn	boolean_t
-hunt_filter_equal(
+ef10_filter_equal(
 	__in		const efx_filter_spec_t *left,
 	__in		const efx_filter_spec_t *right)
 {
@@ -410,7 +409,7 @@ hunt_filter_equal(
 }
 
 static	__checkReturn	boolean_t
-hunt_filter_same_dest(
+ef10_filter_same_dest(
 	__in		const efx_filter_spec_t *left,
 	__in		const efx_filter_spec_t *right)
 {
@@ -427,7 +426,7 @@ hunt_filter_same_dest(
 }
 
 static	__checkReturn	uint32_t
-hunt_filter_hash(
+ef10_filter_hash(
 	__in		efx_filter_spec_t *spec)
 {
 	EFX_STATIC_ASSERT((sizeof (efx_filter_spec_t) % sizeof (uint32_t))
@@ -453,7 +452,7 @@ hunt_filter_hash(
  * exclusive.
  */
 static	__checkReturn	boolean_t
-hunt_filter_is_exclusive(
+ef10_filter_is_exclusive(
 	__in		efx_filter_spec_t *spec)
 {
 	if ((spec->efs_match_flags & EFX_FILTER_MATCH_LOC_MAC) &&
@@ -475,30 +474,31 @@ hunt_filter_is_exclusive(
 }
 
 	__checkReturn	efx_rc_t
-hunt_filter_restore(
+ef10_filter_restore(
 	__in		efx_nic_t *enp)
 {
 	int tbl_id;
 	efx_filter_spec_t *spec;
-	hunt_filter_table_t *hftp = enp->en_filter.ef_hunt_filter_table;
+	ef10_filter_table_t *eftp = enp->en_filter.ef_ef10_filter_table;
 	boolean_t restoring;
 	int state;
 	efx_rc_t rc;
 
-	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON);
+	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON ||
+		    enp->en_family == EFX_FAMILY_MEDFORD);
 
-	for (tbl_id = 0; tbl_id < EFX_HUNT_FILTER_TBL_ROWS; tbl_id++) {
+	for (tbl_id = 0; tbl_id < EFX_EF10_FILTER_TBL_ROWS; tbl_id++) {
 
 		EFSYS_LOCK(enp->en_eslp, state);
 
-		spec = hunt_filter_entry_spec(hftp, tbl_id);
+		spec = ef10_filter_entry_spec(eftp, tbl_id);
 		if (spec == NULL) {
 			restoring = B_FALSE;
-		} else if (hunt_filter_entry_is_busy(hftp, tbl_id)) {
+		} else if (ef10_filter_entry_is_busy(eftp, tbl_id)) {
 			/* Ignore busy entries. */
 			restoring = B_FALSE;
 		} else {
-			hunt_filter_set_entry_busy(hftp, tbl_id);
+			ef10_filter_set_entry_busy(eftp, tbl_id);
 			restoring = B_TRUE;
 		}
 
@@ -507,14 +507,14 @@ hunt_filter_restore(
 		if (restoring == B_FALSE)
 			continue;
 
-		if (hunt_filter_is_exclusive(spec)) {
+		if (ef10_filter_is_exclusive(spec)) {
 			rc = efx_mcdi_filter_op_add(enp, spec,
 			    MC_CMD_FILTER_OP_IN_OP_INSERT,
-			    &hftp->hft_entry[tbl_id].hfe_handle);
+			    &eftp->eft_entry[tbl_id].efe_handle);
 		} else {
 			rc = efx_mcdi_filter_op_add(enp, spec,
 			    MC_CMD_FILTER_OP_IN_OP_SUBSCRIBE,
-			    &hftp->hft_entry[tbl_id].hfe_handle);
+			    &eftp->eft_entry[tbl_id].efe_handle);
 		}
 
 		if (rc != 0)
@@ -522,7 +522,7 @@ hunt_filter_restore(
 
 		EFSYS_LOCK(enp->en_eslp, state);
 
-		hunt_filter_set_entry_not_busy(hftp, tbl_id);
+		ef10_filter_set_entry_not_busy(eftp, tbl_id);
 
 		EFSYS_UNLOCK(enp->en_eslp, state);
 	}
@@ -539,17 +539,17 @@ fail1:
  * An arbitrary search limit for the software hash table. As per the linux net
  * driver.
  */
-#define	EFX_HUNT_FILTER_SEARCH_LIMIT 200
+#define	EF10_FILTER_SEARCH_LIMIT 200
 
 static	__checkReturn	efx_rc_t
-hunt_filter_add_internal(
+ef10_filter_add_internal(
 	__in		efx_nic_t *enp,
 	__inout		efx_filter_spec_t *spec,
 	__in		boolean_t may_replace,
 	__out_opt	uint32_t *filter_id)
 {
 	efx_rc_t rc;
-	hunt_filter_table_t *hftp = enp->en_filter.ef_hunt_filter_table;
+	ef10_filter_table_t *eftp = enp->en_filter.ef_ef10_filter_table;
 	efx_filter_spec_t *saved_spec;
 	uint32_t hash;
 	unsigned int depth;
@@ -559,13 +559,14 @@ hunt_filter_add_internal(
 	int state;
 	boolean_t locked = B_FALSE;
 
-	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON);
+	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON ||
+		    enp->en_family == EFX_FAMILY_MEDFORD);
 
 #if EFSYS_OPT_RX_SCALE
 	spec->efs_rss_context = enp->en_rss_context;
 #endif
 
-	hash = hunt_filter_hash(spec);
+	hash = ef10_filter_hash(spec);
 
 	/*
 	 * FIXME: Add support for inserting filters of different priorities
@@ -584,21 +585,21 @@ hunt_filter_add_internal(
 		locked = B_TRUE;
 
 		for (;;) {
-			i = (hash + depth) & (EFX_HUNT_FILTER_TBL_ROWS - 1);
-			saved_spec = hunt_filter_entry_spec(hftp, i);
+			i = (hash + depth) & (EFX_EF10_FILTER_TBL_ROWS - 1);
+			saved_spec = ef10_filter_entry_spec(eftp, i);
 
 			if (!saved_spec) {
 				if (ins_index < 0) {
 					ins_index = i;
 				}
-			} else if (hunt_filter_equal(spec, saved_spec)) {
-				if (hunt_filter_entry_is_busy(hftp, i))
+			} else if (ef10_filter_equal(spec, saved_spec)) {
+				if (ef10_filter_entry_is_busy(eftp, i))
 					break;
 				if (saved_spec->efs_priority
 					    == EFX_FILTER_PRI_AUTO) {
 					ins_index = i;
 					goto found;
-				} else if (hunt_filter_is_exclusive(spec)) {
+				} else if (ef10_filter_is_exclusive(spec)) {
 					if (may_replace) {
 						ins_index = i;
 						goto found;
@@ -616,7 +617,7 @@ hunt_filter_add_internal(
 			 * the first suitable slot or return EBUSY if
 			 * there was none.
 			 */
-			if (depth == EFX_HUNT_FILTER_SEARCH_LIMIT) {
+			if (depth == EF10_FILTER_SEARCH_LIMIT) {
 				if (ins_index < 0) {
 					rc = EBUSY;
 					goto fail2;
@@ -636,11 +637,11 @@ found:
 	 * insert a conflicting filter while we're waiting for the
 	 * firmware must find the busy entry.
 	 */
-	saved_spec = hunt_filter_entry_spec(hftp, ins_index);
+	saved_spec = ef10_filter_entry_spec(eftp, ins_index);
 	if (saved_spec) {
 		if (saved_spec->efs_priority == EFX_FILTER_PRI_AUTO) {
 			/* This is a filter we are refreshing */
-			hunt_filter_set_entry_not_auto_old(hftp, ins_index);
+			ef10_filter_set_entry_not_auto_old(eftp, ins_index);
 			goto out_unlock;
 
 		}
@@ -652,9 +653,9 @@ found:
 			goto fail3;
 		}
 		*saved_spec = *spec;
-		hunt_filter_set_entry(hftp, ins_index, saved_spec);
+		ef10_filter_set_entry(eftp, ins_index, saved_spec);
 	}
-	hunt_filter_set_entry_busy(hftp, ins_index);
+	ef10_filter_set_entry_busy(eftp, ins_index);
 
 	EFSYS_UNLOCK(enp->en_eslp, state);
 	locked = B_FALSE;
@@ -666,15 +667,15 @@ found:
 	if (replacing) {
 		rc = efx_mcdi_filter_op_add(enp, spec,
 		    MC_CMD_FILTER_OP_IN_OP_REPLACE,
-		    &hftp->hft_entry[ins_index].hfe_handle);
-	} else if (hunt_filter_is_exclusive(spec)) {
+		    &eftp->eft_entry[ins_index].efe_handle);
+	} else if (ef10_filter_is_exclusive(spec)) {
 		rc = efx_mcdi_filter_op_add(enp, spec,
 		    MC_CMD_FILTER_OP_IN_OP_INSERT,
-		    &hftp->hft_entry[ins_index].hfe_handle);
+		    &eftp->eft_entry[ins_index].efe_handle);
 	} else {
 		rc = efx_mcdi_filter_op_add(enp, spec,
 		    MC_CMD_FILTER_OP_IN_OP_SUBSCRIBE,
-		    &hftp->hft_entry[ins_index].hfe_handle);
+		    &eftp->eft_entry[ins_index].efe_handle);
 	}
 
 	if (rc != 0)
@@ -691,7 +692,7 @@ found:
 		saved_spec->efs_dmaq_id = spec->efs_dmaq_id;
 	}
 
-	hunt_filter_set_entry_not_busy(hftp, ins_index);
+	ef10_filter_set_entry_not_busy(eftp, ins_index);
 
 out_unlock:
 
@@ -710,8 +711,8 @@ fail4:
 		EFSYS_KMEM_FREE(enp->en_esip, sizeof (*spec), saved_spec);
 		saved_spec = NULL;
 	}
-	hunt_filter_set_entry_not_busy(hftp, ins_index);
-	hunt_filter_set_entry(hftp, ins_index, NULL);
+	ef10_filter_set_entry_not_busy(eftp, ins_index);
+	ef10_filter_set_entry(eftp, ins_index, NULL);
 
 fail3:
 	EFSYS_PROBE(fail3);
@@ -729,14 +730,14 @@ fail1:
 }
 
 	__checkReturn	efx_rc_t
-hunt_filter_add(
+ef10_filter_add(
 	__in		efx_nic_t *enp,
 	__inout		efx_filter_spec_t *spec,
 	__in		boolean_t may_replace)
 {
 	efx_rc_t rc;
 
-	rc = hunt_filter_add_internal(enp, spec, may_replace, NULL);
+	rc = ef10_filter_add_internal(enp, spec, may_replace, NULL);
 	if (rc != 0)
 		goto fail1;
 
@@ -750,15 +751,15 @@ fail1:
 
 
 static	__checkReturn	efx_rc_t
-hunt_filter_delete_internal(
+ef10_filter_delete_internal(
 	__in		efx_nic_t *enp,
 	__in		uint32_t filter_id)
 {
 	efx_rc_t rc;
-	hunt_filter_table_t *table = enp->en_filter.ef_hunt_filter_table;
+	ef10_filter_table_t *table = enp->en_filter.ef_ef10_filter_table;
 	efx_filter_spec_t *spec;
 	int state;
-	uint32_t filter_idx = filter_id % EFX_HUNT_FILTER_TBL_ROWS;
+	uint32_t filter_idx = filter_id % EFX_EF10_FILTER_TBL_ROWS;
 
 	/*
 	 * Find the software table entry and mark it busy.  Don't
@@ -768,13 +769,13 @@ hunt_filter_delete_internal(
 	 * FIXME: What if the busy flag is never cleared?
 	 */
 	EFSYS_LOCK(enp->en_eslp, state);
-	while (hunt_filter_entry_is_busy(table, filter_idx)) {
+	while (ef10_filter_entry_is_busy(table, filter_idx)) {
 		EFSYS_UNLOCK(enp->en_eslp, state);
 		EFSYS_SPIN(1);
 		EFSYS_LOCK(enp->en_eslp, state);
 	}
-	if ((spec = hunt_filter_entry_spec(table, filter_idx)) != NULL) {
-		hunt_filter_set_entry_busy(table, filter_idx);
+	if ((spec = ef10_filter_entry_spec(table, filter_idx)) != NULL) {
+		ef10_filter_set_entry_busy(table, filter_idx);
 	}
 	EFSYS_UNLOCK(enp->en_eslp, state);
 
@@ -787,20 +788,20 @@ hunt_filter_delete_internal(
 	 * Try to remove the hardware filter. This may fail if the MC has
 	 * rebooted (which frees all hardware filter resources).
 	 */
-	if (hunt_filter_is_exclusive(spec)) {
+	if (ef10_filter_is_exclusive(spec)) {
 		rc = efx_mcdi_filter_op_delete(enp,
 		    MC_CMD_FILTER_OP_IN_OP_REMOVE,
-		    &table->hft_entry[filter_idx].hfe_handle);
+		    &table->eft_entry[filter_idx].efe_handle);
 	} else {
 		rc = efx_mcdi_filter_op_delete(enp,
 		    MC_CMD_FILTER_OP_IN_OP_UNSUBSCRIBE,
-		    &table->hft_entry[filter_idx].hfe_handle);
+		    &table->eft_entry[filter_idx].efe_handle);
 	}
 
 	/* Free the software table entry */
 	EFSYS_LOCK(enp->en_eslp, state);
-	hunt_filter_set_entry_not_busy(table, filter_idx);
-	hunt_filter_set_entry(table, filter_idx, NULL);
+	ef10_filter_set_entry_not_busy(table, filter_idx);
+	ef10_filter_set_entry(table, filter_idx, NULL);
 	EFSYS_UNLOCK(enp->en_eslp, state);
 
 	EFSYS_KMEM_FREE(enp->en_esip, sizeof (*spec), spec);
@@ -821,12 +822,12 @@ fail1:
 }
 
 	__checkReturn	efx_rc_t
-hunt_filter_delete(
+ef10_filter_delete(
 	__in		efx_nic_t *enp,
 	__inout		efx_filter_spec_t *spec)
 {
 	efx_rc_t rc;
-	hunt_filter_table_t *table = enp->en_filter.ef_hunt_filter_table;
+	ef10_filter_table_t *table = enp->en_filter.ef_ef10_filter_table;
 	efx_filter_spec_t *saved_spec;
 	unsigned int hash;
 	unsigned int depth;
@@ -834,22 +835,23 @@ hunt_filter_delete(
 	int state;
 	boolean_t locked = B_FALSE;
 
-	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON);
+	EFSYS_ASSERT(enp->en_family == EFX_FAMILY_HUNTINGTON ||
+		    enp->en_family == EFX_FAMILY_MEDFORD);
 
-	hash = hunt_filter_hash(spec);
+	hash = ef10_filter_hash(spec);
 
 	EFSYS_LOCK(enp->en_eslp, state);
 	locked = B_TRUE;
 
 	depth = 1;
 	for (;;) {
-		i = (hash + depth) & (EFX_HUNT_FILTER_TBL_ROWS - 1);
-		saved_spec = hunt_filter_entry_spec(table, i);
-		if (saved_spec && hunt_filter_equal(spec, saved_spec) &&
-		    hunt_filter_same_dest(spec, saved_spec)) {
+		i = (hash + depth) & (EFX_EF10_FILTER_TBL_ROWS - 1);
+		saved_spec = ef10_filter_entry_spec(table, i);
+		if (saved_spec && ef10_filter_equal(spec, saved_spec) &&
+		    ef10_filter_same_dest(spec, saved_spec)) {
 			break;
 		}
-		if (depth == EFX_HUNT_FILTER_SEARCH_LIMIT) {
+		if (depth == EF10_FILTER_SEARCH_LIMIT) {
 			rc = ENOENT;
 			goto fail1;
 		}
@@ -859,7 +861,7 @@ hunt_filter_delete(
 	EFSYS_UNLOCK(enp->en_eslp, state);
 	locked = B_FALSE;
 
-	rc = hunt_filter_delete_internal(enp, i);
+	rc = ef10_filter_delete_internal(enp, i);
 	if (rc != 0)
 		goto fail2;
 
@@ -958,7 +960,7 @@ fail1:
 }
 
 	__checkReturn	efx_rc_t
-hunt_filter_supported_filters(
+ef10_filter_supported_filters(
 	__in		efx_nic_t *enp,
 	__out		uint32_t *list,
 	__out		size_t *length)
@@ -977,160 +979,186 @@ fail1:
 }
 
 static	__checkReturn	efx_rc_t
-hunt_filter_unicast_refresh(
+ef10_filter_insert_unicast(
 	__in				efx_nic_t *enp,
 	__in_ecount(6)			uint8_t const *addr,
-	__in				boolean_t all_unicst,
 	__in				efx_filter_flag_t filter_flags)
 {
-	hunt_filter_table_t *hftp = enp->en_filter.ef_hunt_filter_table;
+	ef10_filter_table_t *eftp = enp->en_filter.ef_ef10_filter_table;
 	efx_filter_spec_t spec;
 	efx_rc_t rc;
-
-	if (all_unicst == B_TRUE)
-		goto use_uc_def;
 
 	/* Insert the filter for the local station address */
 	efx_filter_spec_init_rx(&spec, EFX_FILTER_PRI_AUTO,
 	    filter_flags,
-	    hftp->hft_default_rxq);
+	    eftp->eft_default_rxq);
 	efx_filter_spec_set_eth_local(&spec, EFX_FILTER_SPEC_VID_UNSPEC, addr);
 
-	rc = hunt_filter_add_internal(enp, &spec, B_TRUE,
-	    &hftp->hft_unicst_filter_index);
-	if (rc != 0) {
-		/*
-		 * Fall back to an unknown filter. We may be able to subscribe
-		 * to it even if we couldn't insert the unicast filter.
-		 */
-		goto use_uc_def;
-	}
-	hftp->hft_unicst_filter_set = B_TRUE;
-
-	return (0);
-
-use_uc_def:
-	/* Insert the unknown unicast filter */
-	efx_filter_spec_init_rx(&spec, EFX_FILTER_PRI_AUTO,
-	    filter_flags,
-	    hftp->hft_default_rxq);
-	efx_filter_spec_set_uc_def(&spec);
-	rc = hunt_filter_add_internal(enp, &spec, B_TRUE,
-	    &hftp->hft_unicst_filter_index);
+	rc = ef10_filter_add_internal(enp, &spec, B_TRUE,
+	    &eftp->eft_unicst_filter_indexes[eftp->eft_unicst_filter_count]);
 	if (rc != 0)
 		goto fail1;
 
-	hftp->hft_unicst_filter_set = B_TRUE;
+	eftp->eft_unicst_filter_count++;
+	EFSYS_ASSERT(eftp->eft_unicst_filter_count <=
+		    EFX_EF10_FILTER_UNICAST_FILTERS_MAX);
 
 	return (0);
 
 fail1:
 	EFSYS_PROBE1(fail1, efx_rc_t, rc);
-
-	if (hftp->hft_unicst_filter_set != B_FALSE) {
-		(void) hunt_filter_delete_internal(enp,
-		    hftp->hft_unicst_filter_index);
-
-		hftp->hft_unicst_filter_set = B_FALSE;
-	}
-
 	return (rc);
 }
 
 static	__checkReturn	efx_rc_t
-hunt_filter_multicast_refresh(
+ef10_filter_insert_all_unicast(
 	__in				efx_nic_t *enp,
-	__in				boolean_t mulcst,
-	__in				boolean_t all_mulcst,
-	__in				boolean_t brdcst,
-	__in_ecount(6*count)		uint8_t const *addrs,
-	__in				int count,
 	__in				efx_filter_flag_t filter_flags)
 {
-	hunt_filter_table_t *hftp = enp->en_filter.ef_hunt_filter_table;
+	ef10_filter_table_t *eftp = enp->en_filter.ef_ef10_filter_table;
 	efx_filter_spec_t spec;
-	uint8_t addr[6];
-	unsigned i;
 	efx_rc_t rc;
 
-	if (all_mulcst == B_TRUE)
-		goto use_mc_def;
+	/* Insert the unknown unicast filter */
+	efx_filter_spec_init_rx(&spec, EFX_FILTER_PRI_AUTO,
+	    filter_flags,
+	    eftp->eft_default_rxq);
+	efx_filter_spec_set_uc_def(&spec);
+	rc = ef10_filter_add_internal(enp, &spec, B_TRUE,
+	    &eftp->eft_unicst_filter_indexes[eftp->eft_unicst_filter_count]);
+	if (rc != 0)
+		goto fail1;
+
+	eftp->eft_unicst_filter_count++;
+	EFSYS_ASSERT(eftp->eft_unicst_filter_count <=
+		    EFX_EF10_FILTER_UNICAST_FILTERS_MAX);
+
+	return (0);
+
+fail1:
+	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+	return (rc);
+}
+
+static	__checkReturn	efx_rc_t
+ef10_filter_insert_multicast_list(
+	__in				efx_nic_t *enp,
+	__in				boolean_t mulcst,
+	__in				boolean_t brdcst,
+	__in_ecount(6*count)		uint8_t const *addrs,
+	__in				uint32_t count,
+	__in				efx_filter_flag_t filter_flags,
+	__in				boolean_t rollback)
+{
+	ef10_filter_table_t *eftp = enp->en_filter.ef_ef10_filter_table;
+	efx_filter_spec_t spec;
+	uint8_t addr[6];
+	uint32_t i;
+	uint32_t filter_index;
+	uint32_t filter_count;
+	efx_rc_t rc;
 
 	if (mulcst == B_FALSE)
 		count = 0;
 
 	if (count + (brdcst ? 1 : 0) >
-	    EFX_ARRAY_SIZE(hftp->hft_mulcst_filter_indexes)) {
-		/* Too many MAC addresses; use unknown multicast filter */
-		goto use_mc_def;
+	    EFX_ARRAY_SIZE(eftp->eft_mulcst_filter_indexes)) {
+		/* Too many MAC addresses */
+		rc = EINVAL;
+		goto fail1;
 	}
 
 	/* Insert/renew multicast address list filters */
-	hftp->hft_mulcst_filter_count = count;
-	for (i = 0; i < hftp->hft_mulcst_filter_count; i++) {
+	filter_count = 0;
+	for (i = 0; i < count; i++) {
 		efx_filter_spec_init_rx(&spec,
 		    EFX_FILTER_PRI_AUTO,
 		    filter_flags,
-		    hftp->hft_default_rxq);
+		    eftp->eft_default_rxq);
 
 		efx_filter_spec_set_eth_local(&spec,
 		    EFX_FILTER_SPEC_VID_UNSPEC,
 		    &addrs[i * EFX_MAC_ADDR_LEN]);
 
-		rc = hunt_filter_add_internal(enp, &spec, B_TRUE,
-		    &hftp->hft_mulcst_filter_indexes[i]);
-		if (rc != 0) {
-			/* Rollback, then use unknown multicast filter */
+		rc = ef10_filter_add_internal(enp, &spec, B_TRUE,
+					    &filter_index);
+
+		if (rc == 0) {
+			eftp->eft_mulcst_filter_indexes[filter_count] =
+				filter_index;
+			filter_count++;
+		} else if (rollback == B_TRUE) {
+			/* Only stop upon failure if told to rollback */
 			goto rollback;
 		}
+
 	}
 
 	if (brdcst == B_TRUE) {
 		/* Insert/renew broadcast address filter */
-		hftp->hft_mulcst_filter_count++;
 		efx_filter_spec_init_rx(&spec, EFX_FILTER_PRI_AUTO,
 		    filter_flags,
-		    hftp->hft_default_rxq);
+		    eftp->eft_default_rxq);
 
 		EFX_MAC_BROADCAST_ADDR_SET(addr);
 		efx_filter_spec_set_eth_local(&spec, EFX_FILTER_SPEC_VID_UNSPEC,
 		    addr);
 
-		rc = hunt_filter_add_internal(enp, &spec, B_TRUE,
-		    &hftp->hft_mulcst_filter_indexes[
-			hftp->hft_mulcst_filter_count - 1]);
-		if (rc != 0) {
-			/* Rollback, then use unknown multicast filter */
+		rc = ef10_filter_add_internal(enp, &spec, B_TRUE,
+					    &filter_index);
+
+		if (rc == 0) {
+			eftp->eft_mulcst_filter_indexes[filter_count] =
+				filter_index;
+			filter_count++;
+		} else if (rollback == B_TRUE) {
+			/* Only stop upon failure if told to rollback */
 			goto rollback;
 		}
 	}
 
+	eftp->eft_mulcst_filter_count = filter_count;
+	eftp->eft_using_all_mulcst = B_FALSE;
+
 	return (0);
 
 rollback:
-	/*
-	 * Rollback by removing any filters we have inserted
-	 * before inserting the unknown multicast filter.
-	 */
+	/* Remove any filters we have inserted */
+	i = filter_count;
 	while (i--) {
-		(void) hunt_filter_delete_internal(enp,
-		    hftp->hft_mulcst_filter_indexes[i]);
+		(void) ef10_filter_delete_internal(enp,
+		    eftp->eft_mulcst_filter_indexes[i]);
 	}
-	hftp->hft_mulcst_filter_count = 0;
+	eftp->eft_mulcst_filter_count = 0;
 
-use_mc_def:
+fail1:
+	EFSYS_PROBE1(fail1, efx_rc_t, rc);
+
+	return (rc);
+}
+
+static	__checkReturn	efx_rc_t
+ef10_filter_insert_all_multicast(
+	__in				efx_nic_t *enp,
+	__in				efx_filter_flag_t filter_flags)
+{
+	ef10_filter_table_t *eftp = enp->en_filter.ef_ef10_filter_table;
+	efx_filter_spec_t spec;
+	efx_rc_t rc;
+
 	/* Insert the unknown multicast filter */
 	efx_filter_spec_init_rx(&spec, EFX_FILTER_PRI_AUTO,
 	    filter_flags,
-	    hftp->hft_default_rxq);
+	    eftp->eft_default_rxq);
 	efx_filter_spec_set_mc_def(&spec);
 
-	rc = hunt_filter_add_internal(enp, &spec, B_TRUE,
-	    &hftp->hft_mulcst_filter_indexes[0]);
+	rc = ef10_filter_add_internal(enp, &spec, B_TRUE,
+	    &eftp->eft_mulcst_filter_indexes[0]);
 	if (rc != 0)
 		goto fail1;
 
-	hftp->hft_mulcst_filter_count = 1;
+	eftp->eft_mulcst_filter_count = 1;
+	eftp->eft_using_all_mulcst = B_TRUE;
 
 	/*
 	 * FIXME: If brdcst == B_FALSE, add a filter to drop broadcast traffic.
@@ -1142,12 +1170,25 @@ fail1:
 	EFSYS_PROBE1(fail1, efx_rc_t, rc);
 
 	return (rc);
+}
 
+static			void
+ef10_filter_remove_old(
+	__in		efx_nic_t *enp)
+{
+	ef10_filter_table_t *table = enp->en_filter.ef_ef10_filter_table;
+	uint32_t i;
+
+	for (i = 0; i < EFX_ARRAY_SIZE(table->eft_entry); i++) {
+		if (ef10_filter_entry_is_auto_old(table, i)) {
+			(void) ef10_filter_delete_internal(enp, i);
+		}
+	}
 }
 
 
 static	__checkReturn	efx_rc_t
-hunt_filter_get_workarounds(
+ef10_filter_get_workarounds(
 	__in				efx_nic_t *enp)
 {
 	efx_nic_cfg_t *encp = &enp->en_nic_cfg;
@@ -1189,7 +1230,7 @@ fail1:
  * still applied in this case).
  */
 	__checkReturn	efx_rc_t
-hunt_filter_reconfigure(
+ef10_filter_reconfigure(
 	__in				efx_nic_t *enp,
 	__in_ecount(6)			uint8_t const *mac_addr,
 	__in				boolean_t all_unicst,
@@ -1197,63 +1238,77 @@ hunt_filter_reconfigure(
 	__in				boolean_t all_mulcst,
 	__in				boolean_t brdcst,
 	__in_ecount(6*count)		uint8_t const *addrs,
-	__in				int count)
+	__in				uint32_t count)
 {
-	hunt_filter_table_t *table = enp->en_filter.ef_hunt_filter_table;
+	efx_nic_cfg_t *encp = &enp->en_nic_cfg;
+	ef10_filter_table_t *table = enp->en_filter.ef_ef10_filter_table;
 	efx_filter_flag_t filter_flags;
 	unsigned i;
-	int all_unicst_rc;
-	int all_mulcst_rc;
+	efx_rc_t all_unicst_rc = 0;
+	efx_rc_t all_mulcst_rc = 0;
 	efx_rc_t rc;
 
-	if (table->hft_default_rxq == NULL) {
+	if (table->eft_default_rxq == NULL) {
 		/*
 		 * Filters direct traffic to the default RXQ, and so cannot be
 		 * inserted until it is available. Any currently configured
 		 * filters must be removed (ignore errors in case the MC
 		 * has rebooted, which removes hardware filters).
 		 */
-		if (table->hft_unicst_filter_set != B_FALSE) {
-			(void) hunt_filter_delete_internal(enp,
-						table->hft_unicst_filter_index);
-			table->hft_unicst_filter_set = B_FALSE;
+		for (i = 0; i < table->eft_unicst_filter_count; i++) {
+			(void) ef10_filter_delete_internal(enp,
+					table->eft_unicst_filter_indexes[i]);
 		}
-		for (i = 0; i < table->hft_mulcst_filter_count; i++) {
-			(void) hunt_filter_delete_internal(enp,
-					table->hft_mulcst_filter_indexes[i]);
+		table->eft_unicst_filter_count = 0;
+
+		for (i = 0; i < table->eft_mulcst_filter_count; i++) {
+			(void) ef10_filter_delete_internal(enp,
+					table->eft_mulcst_filter_indexes[i]);
 		}
-		table->hft_mulcst_filter_count = 0;
+		table->eft_mulcst_filter_count = 0;
 
 		return (0);
 	}
 
-	if (table->hft_using_rss)
+	if (table->eft_using_rss)
 		filter_flags = EFX_FILTER_FLAG_RX_RSS;
 	else
 		filter_flags = 0;
 
 	/* Mark old filters which may need to be removed */
-	if (table->hft_unicst_filter_set != B_FALSE) {
-		hunt_filter_set_entry_auto_old(table,
-					    table->hft_unicst_filter_index);
+	for (i = 0; i < table->eft_unicst_filter_count; i++) {
+		ef10_filter_set_entry_auto_old(table,
+					table->eft_unicst_filter_indexes[i]);
 	}
-	for (i = 0; i < table->hft_mulcst_filter_count; i++) {
-		hunt_filter_set_entry_auto_old(table,
-					table->hft_mulcst_filter_indexes[i]);
+	for (i = 0; i < table->eft_mulcst_filter_count; i++) {
+		ef10_filter_set_entry_auto_old(table,
+					table->eft_mulcst_filter_indexes[i]);
 	}
 
-	/* Insert or renew unicast filters */
-	if ((all_unicst_rc = hunt_filter_unicast_refresh(enp, mac_addr,
-		    all_unicst, filter_flags)) !=  0) {
-		if (all_unicst == B_FALSE) {
-			rc = all_unicst_rc;
+	/*
+	 * Insert or renew unicast filters.
+	 *
+	 * Frimware does not perform chaining on unicast filters. As traffic is
+	 * therefore only delivered to the first matching filter, we should
+	 * always insert the specific filter for our MAC address, to try and
+	 * ensure we get that traffic.
+	 *
+	 * (If the filter for our MAC address has already been inserted by
+	 * another function, we won't receive traffic sent to us, even if we
+	 * insert a unicast mismatch filter. To prevent traffic stealing, this
+	 * therefore relies on the privilege model only allowing functions to
+	 * insert filters for their own MAC address unless explicitly given
+	 * additional privileges by the user. This also means that, even on a
+	 * priviliged function, inserting a unicast mismatch filter may not
+	 * catch all traffic in multi PCI function scenarios.)
+	 */
+	table->eft_unicst_filter_count = 0;
+	rc = ef10_filter_insert_unicast(enp, mac_addr, filter_flags);
+	if (all_unicst || (rc != 0)) {
+		all_unicst_rc = ef10_filter_insert_all_unicast(enp,
+						    filter_flags);
+		if ((rc != 0) && (all_unicst_rc != 0))
 			goto fail1;
-		}
-		/* Retry without all_unicast flag */
-		rc = hunt_filter_unicast_refresh(enp, mac_addr,
-			B_FALSE, filter_flags);
-		if (rc != 0)
-			goto fail2;
 	}
 
 	/*
@@ -1261,40 +1316,93 @@ hunt_filter_reconfigure(
 	 * filters, and can only be enabled or disabled when the hardware filter
 	 * table is empty.
 	 *
+	 * Chained multicast filters require support from the datapath firmware,
+	 * and may not be available (e.g. low-latency variants or old Huntington
+	 * firmware).
+	 *
 	 * Firmware will reset (FLR) functions which have inserted filters in
 	 * the hardware filter table when the workaround is enabled/disabled.
 	 * Functions without any hardware filters are not reset.
 	 *
 	 * Re-check if the workaround is enabled after adding unicast hardware
-	 * filters. This ensures that encp->enc_workaround_bug26807 matches the
+	 * filters. This ensures that encp->enc_bug26807_workaround matches the
 	 * firmware state, and that later changes to enable/disable the
 	 * workaround will result in this function seeing a reset (FLR).
+	 *
+	 * In common-code drivers, we only support multiple PCI function
+	 * scenarios with firmware that supports multicast chaining, so we can
+	 * assume it is enabled for such cases and hence simplify the filter
+	 * insertion logic. Firmware that does not support multicast chaining
+	 * does not support multiple PCI function configurations either, so
+	 * filter insertion is much simpler and the same strategies can still be
+	 * used.
 	 */
-	if ((rc = hunt_filter_get_workarounds(enp)) != 0)
-		goto fail3;
+	if ((rc = ef10_filter_get_workarounds(enp)) != 0)
+		goto fail2;
+
+	if ((table->eft_using_all_mulcst != all_mulcst) &&
+	    (encp->enc_bug26807_workaround == B_TRUE)) {
+		/*
+		 * Multicast filter chaining is enabled, so traffic that matches
+		 * more than one multicast filter will be replicated and
+		 * delivered to multiple recipients.  To avoid this duplicate
+		 * delivery, remove old multicast filters before inserting new
+		 * multicast filters.
+		 */
+		ef10_filter_remove_old(enp);
+	}
 
 	/* Insert or renew multicast filters */
-	if ((all_mulcst_rc = hunt_filter_multicast_refresh(enp, mulcst,
-				all_mulcst, brdcst,
-				addrs, count, filter_flags)) != 0) {
-		if (all_mulcst == B_FALSE) {
-			rc = all_mulcst_rc;
-			goto fail4;
+	if (all_mulcst == B_TRUE) {
+		/*
+		 * Insert the all multicast filter. If that fails, try to insert
+		 * all of our multicast filters (but without rollback on
+		 * failure).
+		 */
+		all_mulcst_rc = ef10_filter_insert_all_multicast(enp,
+							    filter_flags);
+		if (all_mulcst_rc != 0) {
+			rc = ef10_filter_insert_multicast_list(enp, B_TRUE,
+			    brdcst, addrs, count, filter_flags, B_FALSE);
+			if (rc != 0)
+				goto fail3;
 		}
-		/* Retry without all_mulcast flag */
-		rc = hunt_filter_multicast_refresh(enp, mulcst,
-						B_FALSE, brdcst,
-						addrs, count, filter_flags);
-		if (rc != 0)
-			goto fail5;
+	} else {
+		/*
+		 * Insert filters for multicast addresses.
+		 * If any insertion fails, then rollback and try to insert the
+		 * all multicast filter instead.
+		 * If that also fails, try to insert all of the multicast
+		 * filters (but without rollback on failure).
+		 */
+		rc = ef10_filter_insert_multicast_list(enp, mulcst, brdcst,
+			    addrs, count, filter_flags, B_TRUE);
+		if (rc != 0) {
+			if ((table->eft_using_all_mulcst == B_FALSE) &&
+			    (encp->enc_bug26807_workaround == B_TRUE)) {
+				/*
+				 * Multicast filter chaining is on, so remove
+				 * old filters before inserting the multicast
+				 * all filter to avoid duplicate delivery caused
+				 * by packets matching multiple filters.
+				 */
+				ef10_filter_remove_old(enp);
+			}
+
+			rc = ef10_filter_insert_all_multicast(enp,
+							    filter_flags);
+			if (rc != 0) {
+				rc = ef10_filter_insert_multicast_list(enp,
+				    mulcst, brdcst,
+				    addrs, count, filter_flags, B_FALSE);
+				if (rc != 0)
+					goto fail4;
+			}
+		}
 	}
 
 	/* Remove old filters which were not renewed */
-	for (i = 0; i < EFX_ARRAY_SIZE(table->hft_entry); i++) {
-		if (hunt_filter_entry_is_auto_old(table, i)) {
-			(void) hunt_filter_delete_internal(enp, i);
-		}
-	}
+	ef10_filter_remove_old(enp);
 
 	/* report if any optional flags were rejected */
 	if (((all_unicst != B_FALSE) && (all_unicst_rc != 0)) ||
@@ -1304,8 +1412,6 @@ hunt_filter_reconfigure(
 
 	return (rc);
 
-fail5:
-	EFSYS_PROBE(fail5);
 fail4:
 	EFSYS_PROBE(fail4);
 fail3:
@@ -1316,9 +1422,9 @@ fail1:
 	EFSYS_PROBE1(fail1, efx_rc_t, rc);
 
 	/* Clear auto old flags */
-	for (i = 0; i < EFX_ARRAY_SIZE(table->hft_entry); i++) {
-		if (hunt_filter_entry_is_auto_old(table, i)) {
-			hunt_filter_set_entry_not_auto_old(table, i);
+	for (i = 0; i < EFX_ARRAY_SIZE(table->eft_entry); i++) {
+		if (ef10_filter_entry_is_auto_old(table, i)) {
+			ef10_filter_set_entry_not_auto_old(table, i);
 		}
 	}
 
@@ -1326,48 +1432,48 @@ fail1:
 }
 
 		void
-hunt_filter_get_default_rxq(
+ef10_filter_get_default_rxq(
 	__in		efx_nic_t *enp,
 	__out		efx_rxq_t **erpp,
 	__out		boolean_t *using_rss)
 {
-	hunt_filter_table_t *table = enp->en_filter.ef_hunt_filter_table;
+	ef10_filter_table_t *table = enp->en_filter.ef_ef10_filter_table;
 
-	*erpp = table->hft_default_rxq;
-	*using_rss = table->hft_using_rss;
+	*erpp = table->eft_default_rxq;
+	*using_rss = table->eft_using_rss;
 }
 
 
 		void
-hunt_filter_default_rxq_set(
+ef10_filter_default_rxq_set(
 	__in		efx_nic_t *enp,
 	__in		efx_rxq_t *erp,
 	__in		boolean_t using_rss)
 {
-	hunt_filter_table_t *table = enp->en_filter.ef_hunt_filter_table;
+	ef10_filter_table_t *table = enp->en_filter.ef_ef10_filter_table;
 
 #if EFSYS_OPT_RX_SCALE
 	EFSYS_ASSERT((using_rss == B_FALSE) ||
-	    (enp->en_rss_context != HUNTINGTON_RSS_CONTEXT_INVALID));
-	table->hft_using_rss = using_rss;
+	    (enp->en_rss_context != EF10_RSS_CONTEXT_INVALID));
+	table->eft_using_rss = using_rss;
 #else
 	EFSYS_ASSERT(using_rss == B_FALSE);
-	table->hft_using_rss = B_FALSE;
+	table->eft_using_rss = B_FALSE;
 #endif
-	table->hft_default_rxq = erp;
+	table->eft_default_rxq = erp;
 }
 
 		void
-hunt_filter_default_rxq_clear(
+ef10_filter_default_rxq_clear(
 	__in		efx_nic_t *enp)
 {
-	hunt_filter_table_t *table = enp->en_filter.ef_hunt_filter_table;
+	ef10_filter_table_t *table = enp->en_filter.ef_ef10_filter_table;
 
-	table->hft_default_rxq = NULL;
-	table->hft_using_rss = B_FALSE;
+	table->eft_default_rxq = NULL;
+	table->eft_using_rss = B_FALSE;
 }
 
 
 #endif /* EFSYS_OPT_FILTER */
 
-#endif /* EFSYS_OPT_HUNTINGTON */
+#endif /* EFSYS_OPT_HUNTINGTON || EFSYS_OPT_MEDFORD */

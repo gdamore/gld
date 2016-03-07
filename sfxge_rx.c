@@ -1634,13 +1634,13 @@ lookup:
 		 */
 		if (sp->s_rx_prefix_size != 0) {
 			hash = efx_psuedo_hdr_hash_get(sp->s_enp,
-			    EFX_RX_HASHALG_LFSR,
+			    EFX_RX_HASHALG_TOEPLITZ,
 			    DB_BASE(mp));
 		} else {
-			SFXGE_TCP_HASH(
-			    iphp->ip_src.s_addr,
+			SFXGE_TCP_HASH(sp,
+			    &iphp->ip_src.s_addr,
 			    thp->th_sport,
-			    iphp->ip_dst.s_addr,
+			    &iphp->ip_dst.s_addr,
 			    thp->th_dport,
 			    hash);
 		}
@@ -2409,22 +2409,8 @@ sfxge_rx_scale_start(sfxge_t *sp)
 	(void) efx_rx_scale_tbl_set(sp->s_enp, srsp->srs_tbl,
 	    SFXGE_RX_SCALE_MAX);
 
-	/*
-	 * FIXME: The LFSR hash is supported on Falcon and Siena, but not on
-	 * later devices. This driver needs to be converted to use Toeplitz
-	 * hashes. See bug39995.
-	 */
-	if ((sp->s_family == EFX_FAMILY_FALCON) ||
-	    (sp->s_family == EFX_FAMILY_SIENA)) {
-		const efx_nic_cfg_t *encp = efx_nic_cfg_get(sp->s_enp);
-		boolean_t insert =
-		    (encp->enc_features & EFX_FEATURE_LFSR_HASH_INSERT);
-
-		/* Make sure the LFSR hash is selected */
-		if ((rc = efx_rx_scale_mode_set(sp->s_enp,
-			    EFX_RX_HASHALG_LFSR, 0, insert)) != 0)
-			goto fail1;
-	}
+	if ((rc = sfxge_toeplitz_hash_init(sp)) != 0)
+		goto fail1;
 
 	srsp->srs_state = SFXGE_RX_SCALE_STARTED;
 
@@ -2572,6 +2558,8 @@ sfxge_rx_scale_fini(sfxge_t *sp)
 	/* Destroy tables */
 	kmem_free(srsp->srs_cpu, sizeof (unsigned int) * NCPU);
 	srsp->srs_cpu = NULL;
+
+	sfxge_toeplitz_hash_fini(sp);
 }
 
 int

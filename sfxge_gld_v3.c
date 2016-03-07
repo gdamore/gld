@@ -537,26 +537,6 @@ fail1:
  */
 #define	SFXGE_PRIV_PROP_NAME(s) ("_" #s)
 
-/* Return the index of the named phy property. Return -1 if not found. */
-static int
-sfxge_gld_priv_prop_phy_find(sfxge_t *sp, const char *name)
-{
-	efx_nic_t *enp = sp->s_enp;
-	sfxge_mac_priv_prop_t *mac_priv_props;
-	unsigned int id;
-	unsigned int nprops;
-
-	mac_priv_props = sp->s_mac_priv_props;
-	nprops = efx_nic_cfg_get(enp)->enc_phy_nprops;
-
-	for (id = 0; id < nprops; id++) {
-		if (strncmp(name, *mac_priv_props, MAXLINKPROPNAME) == 0)
-			return (id);
-		mac_priv_props++;
-	}
-	return (-1);
-}
-
 #define	SFXGE_XSTR(s) SFXGE_STR(s)
 #define	SFXGE_STR(s) #s
 
@@ -570,13 +550,6 @@ mac_prop_info_handle_t handle)
 	 * "dladm show-linkprop" commands for private properties. Note this does
 	 * not break "dladm reset-linkprop" as might have been expected.
 	 */
-	/* Treat all the phy properties the same */
-	if (sfxge_gld_priv_prop_phy_find(sp, name) > 0) {
-		mac_prop_info_set_default_str(handle, "0");
-		mac_prop_info_set_perm(handle, MAC_PROP_PERM_RW);
-		return;
-	}
-
 	if (strcmp(name, SFXGE_PRIV_PROP_NAME(rx_coalesce_mode)) == 0) {
 		mac_prop_info_set_default_str(handle,
 		    SFXGE_XSTR(SFXGE_RX_COALESCE_OFF));
@@ -614,15 +587,8 @@ static int
 sfxge_gld_priv_prop_get(sfxge_t *sp, const char *name,
     unsigned int size, void *valp)
 {
-	int id;
 	long val;
 	int rc;
-
-	if ((id = sfxge_gld_priv_prop_phy_find(sp, name)) > 0) {
-		if ((rc = sfxge_phy_prop_get(sp, id, 0, (uint32_t *)&val)) != 0)
-			goto fail1;
-		goto done;
-	}
 
 	if (strcmp(name, SFXGE_PRIV_PROP_NAME(rx_coalesce_mode)) == 0) {
 		sfxge_rx_coalesce_mode_t mode;
@@ -660,15 +626,12 @@ sfxge_gld_priv_prop_get(sfxge_t *sp, const char *name,
 #endif
 
 	rc = ENOTSUP;
-	goto fail2;
+	goto fail1;
 
 done:
 	(void) snprintf(valp, size, "%ld", val);
 
 	return (0);
-
-fail2:
-	DTRACE_PROBE(fail2);
 
 fail1:
 	DTRACE_PROBE1(fail1, int, rc);
@@ -681,20 +644,12 @@ static int
 sfxge_gld_priv_prop_set(sfxge_t *sp, const char *name, unsigned int size,
     const void *valp)
 {
-	int id;
 	long val;
 	int rc = 0;
 
 	_NOTE(ARGUNUSED(size))
 
 	(void) ddi_strtol(valp, (char **)NULL, 0, &val);
-
-	if ((id = sfxge_gld_priv_prop_phy_find(sp, name)) > 0) {
-		if ((rc = sfxge_phy_prop_set(sp, id, (uint32_t)val)) != 0)
-			goto fail1;
-		goto done;
-	}
-
 
 	if (strcmp(name, SFXGE_PRIV_PROP_NAME(rx_coalesce_mode)) == 0) {
 		if ((rc = sfxge_rx_coalesce_mode_set(sp,
@@ -738,70 +693,34 @@ fail1:
 	return (rc);
 }
 
-/*
- * The renaming of properties is necessary as efx_phy_prop_name needs to be
- * called after efx_port_init().  See bug 18074 and sfxge_phy.c for notes on the
- * locking strategy.
- */
-void
-sfxge_gld_priv_prop_rename(sfxge_t *sp)
-{
-	sfxge_mac_t *smp = &(sp->s_mac);
-	sfxge_mac_priv_prop_t *mac_priv_props = sp->s_mac_priv_props;
-	efx_nic_t *enp = sp->s_enp;
-	unsigned int nprops;
-	int id;
-
-	ASSERT(mutex_owned(&(smp->sm_lock)));
-
-	nprops = efx_nic_cfg_get(enp)->enc_phy_nprops;
-
-	for (id = 0; id < nprops; id++) {
-		(void) snprintf(*mac_priv_props, MAXLINKPROPNAME - 1, "_%s",
-				efx_phy_prop_name(enp, id));
-		mac_priv_props++;
-	}
-}
 
 #if EFSYS_OPT_MCDI_LOGGING
 #define	SFXGE_N_NAMED_PROPS	4
 #else
+#define	SFXGE_N_NAMED_PROPS	3
 #endif
 
 static void
 sfxge_gld_priv_prop_init(sfxge_t *sp)
 {
-	efx_nic_t *enp = sp->s_enp;
 	sfxge_mac_priv_prop_t *mac_priv_props;
-	unsigned int nprops;
-	unsigned int id;
-	int nnamed_props = 3;
-
-	nprops = efx_nic_cfg_get(enp)->enc_phy_nprops;
+	unsigned int nprops = 0;
 
 	/*
-	 * We have nprops phy properties, nnamed_props (3 or 4)
-	 * named properties and the structure must be finished
-	 * by a NULL pointer.
+	 * We have nnamed_props (3 or 4) named properties and the structure must
+	 * be finished by a NULL pointer.
 	 */
-	sp->s_mac_priv_props_alloc = nprops + nnamed_props + 1;
+	sp->s_mac_priv_props_alloc = SFXGE_N_NAMED_PROPS + 1;
 	sp->s_mac_priv_props = kmem_zalloc(sizeof (sfxge_mac_priv_prop_t) *
 	    sp->s_mac_priv_props_alloc,
 	    KM_SLEEP);
 
 	/*
 	 * Driver-private property names start with an underscore - see
-	 * mc_getprop(9E).  Phy property names are only available later - see
-	 * bug 18074. Siena does not have these phy properties.
+	 * mc_getprop(9E).
 	 */
 
 	mac_priv_props = sp->s_mac_priv_props;
-	for (id = 0; id < nprops; id++) {
-		*mac_priv_props = kmem_zalloc(MAXLINKPROPNAME, KM_SLEEP);
-		(void) snprintf(*mac_priv_props, MAXLINKPROPNAME - 1,
-		    SFXGE_PRIV_PROP_NAME(phyprop%d), id);
-		mac_priv_props++;
-	}
 
 	*mac_priv_props = kmem_zalloc(MAXLINKPROPNAME, KM_SLEEP);
 	(void) snprintf(*mac_priv_props, MAXLINKPROPNAME - 1,
@@ -838,15 +757,12 @@ sfxge_gld_priv_prop_init(sfxge_t *sp)
 static void
 sfxge_gld_priv_prop_fini(sfxge_t *sp)
 {
-	efx_nic_t *enp = sp->s_enp;
-	unsigned int nprops;
 	char **mac_priv_props;
 	unsigned int id;
 
-	nprops = efx_nic_cfg_get(enp)->enc_phy_nprops;
 	mac_priv_props = sp->s_mac_priv_props;
 
-	for (id = 0; id < nprops + 3; id++) {
+	for (id = 0; id < SFXGE_N_NAMED_PROPS; id++) {
 		kmem_free(*mac_priv_props, MAXLINKPROPNAME);
 		mac_priv_props++;
 	}

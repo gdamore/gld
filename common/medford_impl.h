@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2015 Solarflare Communications Inc.
+ * Copyright (c) 2015 Solarflare Communications Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,57 +28,40 @@
  * policies, either expressed or implied, of the FreeBSD Project.
  */
 
-#ifndef	_SYS_LM87_IMPL_H
-#define	_SYS_LM87_IMPL_H
+#ifndef	_SYS_MEDFORD_IMPL_H
+#define	_SYS_MEDFORD_IMPL_H
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
-#if EFSYS_OPT_MON_LM87
+/* Alignment requirement for value written to RX WPTR:
+ *  the WPTR must be aligned to an 8 descriptor boundary
+ *
+ * FIXME: Is this the same on Medford as Huntington?
+ */
+#define	MEDFORD_RX_WPTR_ALIGN	8
 
-#define	TEST_REG 0x15
-#define	SHUTDOWN_LBN 0
-#define	SHUTDOWN_WIDTH 1
 
-#define	CHANNEL_MODE_REG 0x16
-#define	FAN1_AIN1_LBN 0
-#define	FAN1_AIN1_WIDTH 1
-#define	FAN2_AIN2_LBN 1
-#define	FAN2_AIN2_WIDTH 1
 
-#define	CONFIG1_REG 0x40
-#define	START_LBN 0
-#define	START_WIDTH 1
-#define	INT_EN_LBN 1
-#define	INT_EN_WIDTH 1
-#define	INIT_LBN 7
-#define	INIT_WIDTH 1
+#ifndef	ER_EZ_TX_PIOBUF_SIZE
+#define	ER_EZ_TX_PIOBUF_SIZE	4096
+#endif
 
-#define	INTERRUPT_MASK1_REG 0x43
-#define	INTERRUPT_MASK2_REG 0x44
 
-#define	VALUE_2_5V_REG 0x20
-#define	VALUE_VCCP1_REG 0x21
-#define	VALUE_VCC_REG 0x22
-#define	VALUE_5V_REG 0x23
-#define	VALUE_12V_REG 0x24
-#define	VALUE_VCCP2_REG 0x25
-#define	VALUE_EXT_TEMP_REG 0x26
-#define	VALUE_INT_TEMP_REG 0x27
-#define	VALUE_AIN1_REG 0x28
-#define	VALUE_AIN2_REG 0x29
+#define	MEDFORD_PIOBUF_NBUFS	(16)
+#define	MEDFORD_PIOBUF_SIZE	(ER_EZ_TX_PIOBUF_SIZE)
 
-#define	ID_REG 0x3e
-#define	ID_DECODE 0x02
+#define	MEDFORD_MIN_PIO_ALLOC_SIZE	(MEDFORD_PIOBUF_SIZE / 32)
 
-#define	REV_REG 0x3f
-#define	REV_DECODE 0x06
 
-#endif	/* EFSYS_OPT_MON_LM87 */
+extern	__checkReturn	efx_rc_t
+medford_board_cfg(
+	__in		efx_nic_t *enp);
+
 
 #ifdef	__cplusplus
 }
 #endif
 
-#endif	/* _SYS_LM87_IMPL_H */
+#endif	/* _SYS_MEDFORD_IMPL_H */

@@ -199,12 +199,6 @@ sfxge_create(dev_info_t *dip, sfxge_t **spp)
 		sfxge_pcie_check_link(sp, 8, 2); /* PCI 8x Gen2 */
 		break;
 
-	case EFX_FAMILY_FALCON:
-		sfxge_pcie_check_link(sp, 8, 1); /* PCI 8x Gen1 */
-
-		rc = efx_nic_pcie_tune(enp, sp->s_pcie_nlanes);
-		ASSERT(rc == 0);
-		break;
 	default:
 		break;
 	}
